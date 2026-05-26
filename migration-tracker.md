@@ -7,7 +7,7 @@
 | Total COBOL Programs | 43 |
 | Total LOC (COBOL) | ~28,000 |
 | Migration Start Date | 2026-05-26 |
-| Current Phase | Phase 4 — Pending |
+| Current Phase | Phase 5 — Pending |
 | Overall Status | **In Progress** |
 
 ## Phase Summary
@@ -18,7 +18,7 @@
 | 1 | Identity, Menus & User Admin | **Done** | [ff4b49c](https://outpostai.devinenterprise.com/sessions/ff4b49c4dcd14c9c86276bbf6e1b609a) | COSGN00C, COMEN01C, COADM01C, COUSR00C–03C | 117 tests pass (19 new) |
 | 2 | Reference Data & Read-Only Screens | **Done** | [bfd08a5](https://outpostai.devinenterprise.com/sessions/bfd08a5920604f96a8c4714b36cf8416) | COTRTLIC, COTRTUPC, COACTVWC, COCRDSLC, COTRN00C/01C, CORPT00C, COBIL00C (read), COPAUS0C/1C | 150 tests pass (52 new) |
 | 3 | Data Entry Screens | **Done** | [b8ef7e6](https://outpostai.devinenterprise.com/sessions/b8ef7e66a1c04628ba509871ce2a1034) | COCRDLIC, COCRDUPC, COTRN02C (online), COBIL00C (write) | 188 tests pass (26 new) |
-| 4 | Batch Pipeline | Pending | — | CBTRN01C, CBTRN02C, CBACT04C, CBTRN03C, CBSTM03A/B | Zero-tolerance financial tests |
+| 4 | Batch Pipeline | **Done** | [eefcb81](https://outpostai.devinenterprise.com/sessions/eefcb81ed9414ec28004b3646be161bd) | CBTRN01C, CBTRN02C, CBACT04C, CBTRN03C, CBSTM03A/B | 210 tests pass (22 new batch) |
 | 5 | Complex Screens & Sub-Apps | Pending | — | COACTUPC, COPAUA0C, COPAUS2C, CBPAUP0C, CODATE01, COACCT01 | Decomposition validation |
 | 6 | Data Migration & Decommission | Pending | — | CBEXPORT, CBIMPORT, CBACT01C–03C, CBCUS01C | E2E migration tests |
 
@@ -88,12 +88,12 @@
 
 | COBOL Program | LOC | Hotspot Score | Java Target | Status | Notes |
 |---------------|-----|---------------|-------------|--------|-------|
-| CBTRN01C.cbl | 494 | 9 | TransactionInitJob | Pending | Transaction file init |
-| CBTRN02C.cbl | 731 | **14** | DailyTransactionPostingJob | Pending | **CRITICAL** — daily posting |
-| CBACT04C.cbl | 652 | **14** | InterestCalculationJob | Pending | **CRITICAL** — interest calc |
-| CBTRN03C.cbl | 649 | 10 | DailyTransactionReportJob | Pending | Multi-level break report |
-| CBSTM03A.CBL | — | 10 | StatementGenerationJob | Pending | Statement generation |
-| CBSTM03B.CBL | — | — | StatementGenerationJob | Pending | Statement subroutine |
+| CBTRN01C.cbl | 494 | 9 | TransactionInitJob | **Done** | Transaction file init |
+| CBTRN02C.cbl | 731 | **14** | DailyTransactionPostingJob | **Done** | **CRITICAL** — daily posting |
+| CBACT04C.cbl | 652 | **14** | InterestCalculationJob | **Done** | **CRITICAL** — interest calc |
+| CBTRN03C.cbl | 649 | 10 | DailyTransactionReportJob | **Done** | Multi-level break report |
+| CBSTM03A.CBL | — | 10 | StatementGenerationJob | **Done** | Statement generation |
+| CBSTM03B.CBL | — | — | StatementGenerationJob | **Done** | Statement subroutine |
 
 ### Phase 5 — Complex Screens & Sub-Applications
 
@@ -145,3 +145,4 @@
 | 2026-05-26 | Phase 1 | **Completed** | JWT auth, menu routing, user CRUD. 117 tests pass (35 new service+web tests) |
 | 2026-05-26 | Phase 2 | **Completed** | 7 controllers, 7 services, tx type CRUD, read-only views. 150 tests pass (52 new) |
 | 2026-05-26 | Phase 3 | **Completed** | Card update (optimistic locking), transaction add, bill payment. 188 tests pass (26 new) |
+| 2026-05-26 | Phase 4 | **Completed** | 5 Spring Batch jobs, BigDecimal financial arithmetic. 210 tests pass (22 new batch) |
