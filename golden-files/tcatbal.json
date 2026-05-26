@@ -1,0 +1,362 @@
+{
+  "metadata": {
+    "source_file": "tcatbal.txt",
+    "copybook": "CVTRA01Y.cpy",
+    "record_length": 50,
+    "record_count": 50,
+    "description": "Transaction category balances",
+    "generated_at": "2025-05-26T07:00:00Z"
+  },
+  "records": [
+    {
+      "TRANCAT-ACCT-ID": "00000000001",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 1
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000002",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 2
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000003",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 3
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000004",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 4
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000005",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 5
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000006",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 6
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000007",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 7
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000008",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 8
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000009",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 9
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000010",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 10
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000011",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 11
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000012",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 12
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000013",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 13
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000014",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 14
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000015",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 15
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000016",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 16
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000017",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 17
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000018",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 18
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000019",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 19
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000020",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 20
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000021",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 21
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000022",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 22
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000023",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 23
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000024",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 24
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000025",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 25
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000026",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 26
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000027",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 27
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000028",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 28
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000029",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 29
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000030",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 30
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000031",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 31
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000032",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 32
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000033",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 33
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000034",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 34
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000035",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 35
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000036",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 36
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000037",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 37
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000038",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 38
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000039",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 39
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000040",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 40
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000041",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 41
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000042",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 42
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000043",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 43
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000044",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 44
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000045",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 45
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000046",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 46
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000047",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 47
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000048",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 48
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000049",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 49
+    },
+    {
+      "TRANCAT-ACCT-ID": "00000000050",
+      "TRANCAT-TYPE-CD": "01",
+      "TRANCAT-CD": "0001",
+      "TRAN-CAT-BAL": 0.0,
+      "_line": 50
+    }
+  ]
+}

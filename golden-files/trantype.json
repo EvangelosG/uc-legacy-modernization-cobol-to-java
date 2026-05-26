@@ -1,0 +1,47 @@
+{
+  "metadata": {
+    "source_file": "trantype.txt",
+    "copybook": "CVTRA03Y.cpy",
+    "record_length": 60,
+    "record_count": 7,
+    "description": "Transaction type lookup",
+    "generated_at": "2025-05-26T07:00:00Z"
+  },
+  "records": [
+    {
+      "TRAN-TYPE": "01",
+      "TRAN-TYPE-DESC": "Purchase",
+      "_line": 1
+    },
+    {
+      "TRAN-TYPE": "02",
+      "TRAN-TYPE-DESC": "Payment",
+      "_line": 2
+    },
+    {
+      "TRAN-TYPE": "03",
+      "TRAN-TYPE-DESC": "Credit",
+      "_line": 3
+    },
+    {
+      "TRAN-TYPE": "04",
+      "TRAN-TYPE-DESC": "Authorization",
+      "_line": 4
+    },
+    {
+      "TRAN-TYPE": "05",
+      "TRAN-TYPE-DESC": "Refund",
+      "_line": 5
+    },
+    {
+      "TRAN-TYPE": "06",
+      "TRAN-TYPE-DESC": "Reversal",
+      "_line": 6
+    },
+    {
+      "TRAN-TYPE": "07",
+      "TRAN-TYPE-DESC": "Adjustment",
+      "_line": 7
+    }
+  ]
+}
