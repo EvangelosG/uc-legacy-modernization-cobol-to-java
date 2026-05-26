@@ -1,6 +1,7 @@
 package com.carddemo.web.config;
 
 import com.carddemo.service.AuthService;
+import com.carddemo.service.TransactionTypeService;
 import com.carddemo.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +29,26 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UserService.DuplicateUserException.class)
     public ResponseEntity<Map<String, String>> handleDuplicateUser(UserService.DuplicateUserException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("error", ex.getMessage()));
+    }
+
+    @ExceptionHandler(TransactionTypeService.ResourceNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleResourceNotFound(
+            TransactionTypeService.ResourceNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("error", ex.getMessage()));
+    }
+
+    @ExceptionHandler(TransactionTypeService.DuplicateResourceException.class)
+    public ResponseEntity<Map<String, String>> handleDuplicateResource(
+            TransactionTypeService.DuplicateResourceException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("error", ex.getMessage()));
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, String>> handleIllegalArgument(IllegalArgumentException ex) {
+        return ResponseEntity.badRequest()
                 .body(Map.of("error", ex.getMessage()));
     }
 
