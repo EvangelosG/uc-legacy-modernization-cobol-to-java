@@ -7,7 +7,7 @@
 | Total COBOL Programs | 43 |
 | Total LOC (COBOL) | ~28,000 |
 | Migration Start Date | 2026-05-26 |
-| Current Phase | Phase 3 — Pending |
+| Current Phase | Phase 4 — Pending |
 | Overall Status | **In Progress** |
 
 ## Phase Summary
@@ -17,7 +17,7 @@
 | 0 | Infrastructure & Foundation | **Done** | [d2db011](https://outpostai.devinenterprise.com/sessions/d2db011778f4423388673422e0876ede) | Copybooks → DTOs, CSUTLDTC, COBSWAIT | `mvn compile` + `mvn test` — 82 tests pass |
 | 1 | Identity, Menus & User Admin | **Done** | [ff4b49c](https://outpostai.devinenterprise.com/sessions/ff4b49c4dcd14c9c86276bbf6e1b609a) | COSGN00C, COMEN01C, COADM01C, COUSR00C–03C | 117 tests pass (19 new) |
 | 2 | Reference Data & Read-Only Screens | **Done** | [bfd08a5](https://outpostai.devinenterprise.com/sessions/bfd08a5920604f96a8c4714b36cf8416) | COTRTLIC, COTRTUPC, COACTVWC, COCRDSLC, COTRN00C/01C, CORPT00C, COBIL00C (read), COPAUS0C/1C | 150 tests pass (52 new) |
-| 3 | Data Entry Screens | Pending | — | COCRDLIC, COCRDUPC, COTRN02C (online), COBIL00C (write) | Optimistic locking + write tests |
+| 3 | Data Entry Screens | **Done** | [b8ef7e6](https://outpostai.devinenterprise.com/sessions/b8ef7e66a1c04628ba509871ce2a1034) | COCRDLIC, COCRDUPC, COTRN02C (online), COBIL00C (write) | 188 tests pass (26 new) |
 | 4 | Batch Pipeline | Pending | — | CBTRN01C, CBTRN02C, CBACT04C, CBTRN03C, CBSTM03A/B | Zero-tolerance financial tests |
 | 5 | Complex Screens & Sub-Apps | Pending | — | COACTUPC, COPAUA0C, COPAUS2C, CBPAUP0C, CODATE01, COACCT01 | Decomposition validation |
 | 6 | Data Migration & Decommission | Pending | — | CBEXPORT, CBIMPORT, CBACT01C–03C, CBCUS01C | E2E migration tests |
@@ -79,10 +79,10 @@
 
 | COBOL Program | LOC | Java Target | Status | Notes |
 |---------------|-----|-------------|--------|-------|
-| COCRDLIC.cbl | 1,459 | CardController (GET list) | Pending | 16 GO TOs, card browse |
-| COCRDUPC.cbl | 1,560 | CardController (PUT) — REWRITE | Pending | 21 GO TOs, 8-state machine → stateless REST |
-| COTRN02C.cbl | 783 | TransactionController (POST) | Pending | Online transaction add |
-| COBIL00C.cbl | 572 | BillingController (POST) | Pending | Bill payment (write) |
+| COCRDLIC.cbl | 1,459 | CardController (GET list) | **Done** | 16 GO TOs, card browse |
+| COCRDUPC.cbl | 1,560 | CardController (PUT) — REWRITE | **Done** | 21 GO TOs, 8-state machine → stateless REST |
+| COTRN02C.cbl | 783 | TransactionController (POST) | **Done** | Online transaction add |
+| COBIL00C.cbl | 572 | BillingController (POST) | **Done** | Bill payment (write) |
 
 ### Phase 4 — Batch Pipeline (HIGHEST RISK)
 
@@ -144,3 +144,4 @@
 | 2026-05-26 | Phase 0 | **Completed** | 65 files, 4,137 LOC, 82 tests pass. 11 entities, 6 VOs, 11 repos, 12 Flyway migrations, 3 utils, 1 DTO |
 | 2026-05-26 | Phase 1 | **Completed** | JWT auth, menu routing, user CRUD. 117 tests pass (35 new service+web tests) |
 | 2026-05-26 | Phase 2 | **Completed** | 7 controllers, 7 services, tx type CRUD, read-only views. 150 tests pass (52 new) |
+| 2026-05-26 | Phase 3 | **Completed** | Card update (optimistic locking), transaction add, bill payment. 188 tests pass (26 new) |
