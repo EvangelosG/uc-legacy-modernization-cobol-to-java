@@ -8,6 +8,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from copybook_parser import parse_copybook, get_record_length, get_min_record_length
 from record_parser import (
+    decode_comp,
+    decode_comp3,
     decode_field,
     decode_signed_numeric,
     decode_unsigned_numeric,
@@ -206,3 +208,89 @@ class TestParseTransactionTypes:
         r = records[0]
         assert r["TRAN-TYPE"] == "01"
         assert r["TRAN-TYPE-DESC"].strip() == "Purchase"
+
+
+class TestDecodeComp3:
+    def test_positive_zero(self):
+        # 0x00 0x0C → nibbles: 0 0 0 C → digits "000", sign C (+)
+        result = decode_comp3(b"\x00\x0C", 0, True)
+        assert result == Decimal("0")
+
+    def test_positive_integer(self):
+        # PIC S9(03) COMP-3 = 2 bytes, value +123
+        # 12 3C → nibbles: 1 2 3 C → digits "123", sign C (+)
+        result = decode_comp3(b"\x12\x3C", 0, True)
+        assert result == Decimal("123")
+
+    def test_negative_integer(self):
+        # PIC S9(03) COMP-3 = 2 bytes, value -456
+        # 45 6D → nibbles: 4 5 6 D → digits "456", sign D (-)
+        result = decode_comp3(b"\x45\x6D", 0, True)
+        assert result == Decimal("-456")
+
+    def test_with_decimals(self):
+        # PIC S9(05)V99 COMP-3 = 4 bytes, value +504.77
+        # 7 digits → ceil((7+1)/2) = 4 bytes
+        # 0 0 5 0 4 7 7 C → 0x00 0x50 0x47 0x7C
+        result = decode_comp3(b"\x00\x50\x47\x7C", 2, True)
+        assert result == Decimal("504.77")
+
+    def test_negative_with_decimals(self):
+        # PIC S9(05)V99 COMP-3 = 4 bytes, value -919.00
+        # 0 0 9 1 9 0 0 D → 0x00 0x91 0x90 0x0D
+        result = decode_comp3(b"\x00\x91\x90\x0D", 2, True)
+        assert result == Decimal("-919.00")
+
+    def test_unsigned(self):
+        # PIC 9(03) COMP-3 = 2 bytes, value 747
+        # 74 7F → nibbles: 7 4 7 F → digits "747", sign F (unsigned)
+        result = decode_comp3(b"\x74\x7F", 0, False)
+        assert result == Decimal("747")
+
+    def test_empty_bytes(self):
+        result = decode_comp3(b"", 2, True)
+        assert result == Decimal("0")
+
+    def test_large_value(self):
+        # PIC S9(09)V99 COMP-3 = 6 bytes, value +123456789.12
+        # 11 digits → ceil((11+1)/2) = 6 bytes
+        # 1 2 3 4 5 6 7 8 9 1 2 C → 0x12 0x34 0x56 0x78 0x91 0x2C
+        result = decode_comp3(b"\x12\x34\x56\x78\x91\x2C", 2, True)
+        assert result == Decimal("123456789.12")
+
+
+class TestDecodeComp:
+    def test_unsigned_2_bytes(self):
+        # PIC 9(04) COMP → 2 bytes, big-endian
+        # 0x00 0x2A = 42
+        result = decode_comp(b"\x00\x2A", 0, False)
+        assert result == "42"
+
+    def test_signed_2_bytes_positive(self):
+        # PIC S9(04) COMP → 2 bytes, signed big-endian
+        # 0x00 0x64 = 100
+        result = decode_comp(b"\x00\x64", 0, True)
+        assert result == Decimal("100")
+
+    def test_signed_2_bytes_negative(self):
+        # PIC S9(04) COMP → 2 bytes, signed big-endian
+        # 0xFF 0x9C = -100 (two's complement)
+        result = decode_comp(b"\xFF\x9C", 0, True)
+        assert result == Decimal("-100")
+
+    def test_unsigned_4_bytes(self):
+        # PIC 9(09) COMP → 4 bytes
+        # 0x00 0x00 0x03 0xE8 = 1000
+        result = decode_comp(b"\x00\x00\x03\xE8", 0, False)
+        assert result == "1000"
+
+    def test_with_decimals(self):
+        # PIC S9(05)V99 COMP → 4 bytes, value stored as integer
+        # Value = 50477 (represents 504.77 with 2 decimals)
+        # 0x00 0x00 0xC5 0x2D = 50477
+        result = decode_comp(b"\x00\x00\xC5\x2D", 2, True)
+        assert result == Decimal("504.77")
+
+    def test_empty_bytes(self):
+        result = decode_comp(b"", 2, True)
+        assert result == Decimal("0")

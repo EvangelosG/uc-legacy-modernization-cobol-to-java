@@ -12,6 +12,7 @@ from copybook_parser import (
     parse_copybook,
     _expand_pic,
     _parse_pic,
+    _storage_length,
 )
 
 COPYBOOK_DIR = Path(__file__).resolve().parent.parent.parent / "app" / "cpy"
@@ -169,3 +170,100 @@ class TestRecordLength:
         full = get_record_length(fields)
         min_len = get_min_record_length(fields)
         assert min_len <= full
+
+
+class TestStorageLength:
+    def test_display_1_digit(self):
+        assert _storage_length(1, "display") == 1
+
+    def test_display_11_digits(self):
+        assert _storage_length(11, "display") == 11
+
+    def test_comp3_3_digits(self):
+        # PIC 9(03) COMP-3: ceil((3+1)/2) = 2 bytes
+        assert _storage_length(3, "comp3") == 2
+
+    def test_comp3_11_digits(self):
+        # PIC S9(09)V99 COMP-3: 11 digits → ceil((11+1)/2) = 6 bytes
+        assert _storage_length(11, "comp3") == 6
+
+    def test_comp3_12_digits(self):
+        # PIC S9(10)V99 COMP-3: 12 digits → ceil((12+1)/2) = 7 bytes
+        assert _storage_length(12, "comp3") == 7
+
+    def test_comp_4_digits(self):
+        # PIC S9(04) COMP: 4 digits → 2 bytes
+        assert _storage_length(4, "comp") == 2
+
+    def test_comp_9_digits(self):
+        # PIC 9(09) COMP: 9 digits → 4 bytes
+        assert _storage_length(9, "comp") == 4
+
+    def test_comp_11_digits(self):
+        # PIC 9(11) COMP: 11 digits → 8 bytes
+        assert _storage_length(11, "comp") == 8
+
+
+class TestParsePicWithUsage:
+    def test_comp3_signed_with_decimal(self):
+        field_type, length, decimals = _parse_pic("S9(09)V99", "comp3")
+        assert field_type == "signed_numeric"
+        assert length == 6  # ceil((11+1)/2)
+        assert decimals == 2
+
+    def test_comp3_unsigned(self):
+        field_type, length, decimals = _parse_pic("9(03)", "comp3")
+        assert field_type == "numeric"
+        assert length == 2  # ceil((3+1)/2)
+        assert decimals == 0
+
+    def test_comp_signed(self):
+        field_type, length, decimals = _parse_pic("S9(04)", "comp")
+        assert field_type == "signed_numeric"
+        assert length == 2  # 4 digits → 2 bytes
+        assert decimals == 0
+
+    def test_comp_unsigned(self):
+        field_type, length, decimals = _parse_pic("9(09)", "comp")
+        assert field_type == "numeric"
+        assert length == 4  # 9 digits → 4 bytes
+        assert decimals == 0
+
+    def test_comp_with_decimal(self):
+        field_type, length, decimals = _parse_pic("S9(10)V99", "comp")
+        assert field_type == "signed_numeric"
+        assert length == 8  # 12 digits → 8 bytes
+        assert decimals == 2
+
+
+class TestParseCopybookWithUsage:
+    def test_export_copybook_comp3_fields(self):
+        export_dir = COPYBOOK_DIR.parent / "cpy"
+        fields = parse_copybook(export_dir / "CVEXPORT.cpy")
+        comp3_fields = [f for f in fields if f.usage == "comp3"]
+        assert len(comp3_fields) > 0
+        for f in comp3_fields:
+            assert f.length < 8  # COMP-3 is always compact
+
+    def test_export_copybook_comp_fields(self):
+        export_dir = COPYBOOK_DIR.parent / "cpy"
+        fields = parse_copybook(export_dir / "CVEXPORT.cpy")
+        comp_fields = [f for f in fields if f.usage == "comp"]
+        assert len(comp_fields) > 0
+
+    def test_ims_auth_summary(self):
+        ims_dir = (COPYBOOK_DIR.parent / "app-authorization-ims-db2-mq" / "cpy")
+        fields = parse_copybook(ims_dir / "CIPAUSMY.cpy")
+        # PA-ACCT-ID: PIC S9(11) COMP-3 → 6 bytes
+        pa_acct = next(f for f in fields if f.name == "PA-ACCT-ID")
+        assert pa_acct.usage == "comp3"
+        assert pa_acct.length == 6
+        # PA-CREDIT-LIMIT: PIC S9(09)V99 COMP-3 → 6 bytes
+        pa_credit = next(f for f in fields if f.name == "PA-CREDIT-LIMIT")
+        assert pa_credit.usage == "comp3"
+        assert pa_credit.length == 6
+        assert pa_credit.decimals == 2
+        # PA-APPROVED-AUTH-CNT: PIC S9(04) COMP → 2 bytes
+        pa_cnt = next(f for f in fields if f.name == "PA-APPROVED-AUTH-CNT")
+        assert pa_cnt.usage == "comp"
+        assert pa_cnt.length == 2

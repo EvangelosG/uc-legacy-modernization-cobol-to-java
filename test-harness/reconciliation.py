@@ -340,6 +340,228 @@ def rc06_disclosure_group_coverage(data_dir: Path) -> CheckResult:
     return result
 
 
+def rc07_transaction_posting_completeness(
+    data_dir: Path,
+    pre_dir: Path | None = None,
+) -> CheckResult:
+    """RC-07: Every daily transaction is either posted or rejected.
+
+    After POSTTRAN (CBTRN02C), each DALYTRAN record should appear in
+    either the posted transactions (transact.json) or the rejects
+    (dalyrejs.json). No transaction should be silently dropped.
+
+    Additionally validates:
+    - Sum of posted + rejected amounts equals sum of input amounts
+    - No transaction ID appears in both posted and rejected
+    """
+    result = CheckResult(
+        check_id="RC-07",
+        name="Transaction Posting Completeness",
+        status="PASS",
+    )
+
+    daily_path = data_dir / "dailytran.json"
+    posted_path = data_dir / "transact.json"
+    rejects_path = data_dir / "dalyrejs.json"
+
+    if not daily_path.exists():
+        result.status = "SKIP"
+        return result
+
+    if not posted_path.exists() and not rejects_path.exists():
+        result.status = "SKIP"
+        return result
+
+    dailytrans = _load_records(daily_path)
+    result.records_checked = len(dailytrans)
+
+    posted: List[Dict[str, Any]] = []
+    if posted_path.exists():
+        posted = _load_records(posted_path)
+
+    rejects: List[Dict[str, Any]] = []
+    if rejects_path.exists():
+        rejects = _load_records(rejects_path)
+
+    # Build ID sets — use the transaction ID field
+    daily_ids: Set[str] = set()
+    for t in dailytrans:
+        tid = str(t.get("DALYTRAN-ID", t.get("TRAN-ID", ""))).strip()
+        if tid:
+            daily_ids.add(tid)
+
+    posted_ids: Set[str] = set()
+    for t in posted:
+        tid = str(t.get("TRAN-ID", "")).strip()
+        if tid:
+            posted_ids.add(tid)
+
+    reject_ids: Set[str] = set()
+    for t in rejects:
+        tid = str(t.get("DALYTRAN-ID", t.get("TRAN-ID", ""))).strip()
+        if tid:
+            reject_ids.add(tid)
+
+    # Check: no ID in both posted and rejected
+    dups = posted_ids & reject_ids
+    for dup in sorted(dups):
+        result.status = "FAIL"
+        result.violations.append(Violation(
+            record_key=dup,
+            details="Transaction appears in both posted and rejected",
+        ))
+
+    # Check: every daily transaction accounted for
+    accounted = posted_ids | reject_ids
+    for tid in sorted(daily_ids - accounted):
+        result.status = "FAIL"
+        result.violations.append(Violation(
+            record_key=tid,
+            details="Daily transaction not found in posted or rejected output",
+        ))
+
+    # Check: count parity
+    expected_count = len(dailytrans)
+    actual_count = len(posted) + len(rejects)
+    if expected_count != actual_count:
+        result.status = "FAIL"
+        result.violations.append(Violation(
+            record_key="COUNT",
+            details=(
+                f"Input count ({expected_count}) != "
+                f"posted ({len(posted)}) + rejected ({len(rejects)}) = {actual_count}"
+            ),
+        ))
+
+    # Check: amount sum parity
+    daily_sum = sum(
+        (t.get("DALYTRAN-AMT", Decimal("0")) for t in dailytrans),
+        Decimal("0"),
+    )
+    posted_sum = sum(
+        (t.get("TRAN-AMT", Decimal("0")) for t in posted),
+        Decimal("0"),
+    )
+    reject_sum = sum(
+        (t.get("DALYTRAN-AMT", t.get("TRAN-AMT", Decimal("0"))) for t in rejects),
+        Decimal("0"),
+    )
+    if daily_sum != posted_sum + reject_sum:
+        diff = daily_sum - (posted_sum + reject_sum)
+        result.status = "FAIL"
+        result.violations.append(Violation(
+            record_key="AMOUNT_SUM",
+            details=(
+                f"Input sum ({daily_sum}) != "
+                f"posted sum ({posted_sum}) + reject sum ({reject_sum}), "
+                f"diff={diff}"
+            ),
+        ))
+
+    return result
+
+
+def rc08_interest_calc_integrity(
+    data_dir: Path,
+    pre_dir: Path | None = None,
+) -> CheckResult:
+    """RC-08: Interest calculation preserves balance integrity.
+
+    After INTCALC (CBACT04C), the difference between post-run and
+    pre-run ACCT-CURR-BAL should equal the sum of interest transactions
+    posted for that account.
+
+    Args:
+        data_dir: Directory with post-INTCALC data (acctdata.json)
+        pre_dir: Directory with pre-INTCALC snapshot (acctdata.json).
+                 If None, checks that interest records reference valid
+                 accounts and have reasonable rates.
+    """
+    result = CheckResult(
+        check_id="RC-08",
+        name="Interest Calculation Balance Integrity",
+        status="PASS",
+    )
+
+    acct_path = data_dir / "acctdata.json"
+    systran_path = data_dir / "systran.json"
+
+    if not acct_path.exists():
+        result.status = "SKIP"
+        return result
+
+    accounts = _load_records(acct_path)
+    result.records_checked = len(accounts)
+
+    # If systran (interest transactions) exists, validate amounts
+    if systran_path.exists():
+        systrans = _load_records(systran_path)
+
+        # Sum interest by account
+        interest_by_acct: Dict[str, Decimal] = {}
+        for st in systrans:
+            acct_id = str(st.get("ACCT-ID", st.get("TRANCAT-ACCT-ID", ""))).strip()
+            amt = st.get("TRAN-AMT", st.get("INTEREST-AMT", Decimal("0")))
+            interest_by_acct[acct_id] = interest_by_acct.get(acct_id, Decimal("0")) + amt
+
+        acct_ids: Set[str] = {str(a["ACCT-ID"]).strip() for a in accounts}
+
+        # Every interest transaction references a valid account
+        for acct_id in sorted(interest_by_acct.keys()):
+            if acct_id not in acct_ids:
+                result.status = "FAIL"
+                result.violations.append(Violation(
+                    record_key=acct_id,
+                    details="Interest transaction references nonexistent account",
+                ))
+
+        # If pre-run snapshot available, verify balance changes
+        if pre_dir is not None:
+            pre_acct_path = pre_dir / "acctdata.json"
+            if pre_acct_path.exists():
+                pre_accounts = _load_records(pre_acct_path)
+                pre_bal: Dict[str, Decimal] = {
+                    str(a["ACCT-ID"]).strip(): a["ACCT-CURR-BAL"]
+                    for a in pre_accounts
+                }
+                post_bal: Dict[str, Decimal] = {
+                    str(a["ACCT-ID"]).strip(): a["ACCT-CURR-BAL"]
+                    for a in accounts
+                }
+
+                for acct_id in sorted(post_bal.keys()):
+                    if acct_id not in pre_bal:
+                        continue
+                    actual_diff = post_bal[acct_id] - pre_bal[acct_id]
+                    expected_interest = interest_by_acct.get(acct_id, Decimal("0"))
+                    if actual_diff != expected_interest:
+                        result.status = "FAIL"
+                        result.violations.append(Violation(
+                            record_key=acct_id,
+                            details=(
+                                f"Balance change ({actual_diff}) != "
+                                f"interest posted ({expected_interest}), "
+                                f"diff={actual_diff - expected_interest}"
+                            ),
+                        ))
+    else:
+        # No systran — check disclosure group rate reasonability
+        disc_path = data_dir / "discgrp.json"
+        if disc_path.exists():
+            discgrps = _load_records(disc_path)
+            for dg in discgrps:
+                rate = dg.get("DIS-INT-RATE", Decimal("0"))
+                if rate < Decimal("0") or rate > Decimal("100"):
+                    group_id = str(dg.get("DIS-ACCT-GROUP-ID", ""))
+                    result.status = "FAIL"
+                    result.violations.append(Violation(
+                        record_key=group_id,
+                        details=f"Interest rate {rate}% outside reasonable range [0, 100]",
+                    ))
+
+    return result
+
+
 ALL_CHECKS = [
     rc01_xref_integrity,
     rc02_balance_consistency,
@@ -347,6 +569,8 @@ ALL_CHECKS = [
     rc04_card_account_validity,
     rc05_transaction_completeness,
     rc06_disclosure_group_coverage,
+    rc07_transaction_posting_completeness,
+    rc08_interest_calc_integrity,
 ]
 
 
