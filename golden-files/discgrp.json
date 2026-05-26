@@ -1,0 +1,369 @@
+{
+  "metadata": {
+    "source_file": "discgrp.txt",
+    "copybook": "CVTRA02Y.cpy",
+    "record_length": 50,
+    "record_count": 51,
+    "description": "Disclosure/interest rate groups",
+    "generated_at": "2025-05-26T07:00:00Z"
+  },
+  "records": [
+    {
+      "DIS-ACCT-GROUP-ID": "A000000000",
+      "DIS-TRAN-TYPE-CD": "01",
+      "DIS-TRAN-CAT-CD": "0001",
+      "DIS-INT-RATE": 15.0,
+      "_line": 1
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "A000000000",
+      "DIS-TRAN-TYPE-CD": "01",
+      "DIS-TRAN-CAT-CD": "0002",
+      "DIS-INT-RATE": 25.0,
+      "_line": 2
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "A000000000",
+      "DIS-TRAN-TYPE-CD": "01",
+      "DIS-TRAN-CAT-CD": "0003",
+      "DIS-INT-RATE": 25.0,
+      "_line": 3
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "A000000000",
+      "DIS-TRAN-TYPE-CD": "01",
+      "DIS-TRAN-CAT-CD": "0004",
+      "DIS-INT-RATE": 25.0,
+      "_line": 4
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "A000000000",
+      "DIS-TRAN-TYPE-CD": "02",
+      "DIS-TRAN-CAT-CD": "0001",
+      "DIS-INT-RATE": 0.0,
+      "_line": 5
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "A000000000",
+      "DIS-TRAN-TYPE-CD": "02",
+      "DIS-TRAN-CAT-CD": "0002",
+      "DIS-INT-RATE": 0.0,
+      "_line": 6
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "A000000000",
+      "DIS-TRAN-TYPE-CD": "02",
+      "DIS-TRAN-CAT-CD": "0003",
+      "DIS-INT-RATE": 0.0,
+      "_line": 7
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "A000000000",
+      "DIS-TRAN-TYPE-CD": "03",
+      "DIS-TRAN-CAT-CD": "0001",
+      "DIS-INT-RATE": 0.0,
+      "_line": 8
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "A000000000",
+      "DIS-TRAN-TYPE-CD": "03",
+      "DIS-TRAN-CAT-CD": "0002",
+      "DIS-INT-RATE": 0.0,
+      "_line": 9
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "A000000000",
+      "DIS-TRAN-TYPE-CD": "03",
+      "DIS-TRAN-CAT-CD": "0003",
+      "DIS-INT-RATE": 0.0,
+      "_line": 10
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "A000000000",
+      "DIS-TRAN-TYPE-CD": "04",
+      "DIS-TRAN-CAT-CD": "0001",
+      "DIS-INT-RATE": 15.0,
+      "_line": 11
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "A000000000",
+      "DIS-TRAN-TYPE-CD": "04",
+      "DIS-TRAN-CAT-CD": "0002",
+      "DIS-INT-RATE": 15.0,
+      "_line": 12
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "A000000000",
+      "DIS-TRAN-TYPE-CD": "04",
+      "DIS-TRAN-CAT-CD": "0003",
+      "DIS-INT-RATE": 15.0,
+      "_line": 13
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "A000000000",
+      "DIS-TRAN-TYPE-CD": "05",
+      "DIS-TRAN-CAT-CD": "0001",
+      "DIS-INT-RATE": 15.0,
+      "_line": 14
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "A000000000",
+      "DIS-TRAN-TYPE-CD": "06",
+      "DIS-TRAN-CAT-CD": "0001",
+      "DIS-INT-RATE": 15.0,
+      "_line": 15
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "A000000000",
+      "DIS-TRAN-TYPE-CD": "06",
+      "DIS-TRAN-CAT-CD": "0002",
+      "DIS-INT-RATE": 15.0,
+      "_line": 16
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "A000000000",
+      "DIS-TRAN-TYPE-CD": "07",
+      "DIS-TRAN-CAT-CD": "0001",
+      "DIS-INT-RATE": 15.0,
+      "_line": 17
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "DEFAULT",
+      "DIS-TRAN-TYPE-CD": "01",
+      "DIS-TRAN-CAT-CD": "0001",
+      "DIS-INT-RATE": 15.0,
+      "_line": 18
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "DEFAULT",
+      "DIS-TRAN-TYPE-CD": "01",
+      "DIS-TRAN-CAT-CD": "0002",
+      "DIS-INT-RATE": 25.0,
+      "_line": 19
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "DEFAULT",
+      "DIS-TRAN-TYPE-CD": "01",
+      "DIS-TRAN-CAT-CD": "0003",
+      "DIS-INT-RATE": 25.0,
+      "_line": 20
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "DEFAULT",
+      "DIS-TRAN-TYPE-CD": "01",
+      "DIS-TRAN-CAT-CD": "0004",
+      "DIS-INT-RATE": 25.0,
+      "_line": 21
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "DEFAULT",
+      "DIS-TRAN-TYPE-CD": "02",
+      "DIS-TRAN-CAT-CD": "0001",
+      "DIS-INT-RATE": 0.0,
+      "_line": 22
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "DEFAULT",
+      "DIS-TRAN-TYPE-CD": "02",
+      "DIS-TRAN-CAT-CD": "0002",
+      "DIS-INT-RATE": 0.0,
+      "_line": 23
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "DEFAULT",
+      "DIS-TRAN-TYPE-CD": "02",
+      "DIS-TRAN-CAT-CD": "0003",
+      "DIS-INT-RATE": 0.0,
+      "_line": 24
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "DEFAULT",
+      "DIS-TRAN-TYPE-CD": "03",
+      "DIS-TRAN-CAT-CD": "0001",
+      "DIS-INT-RATE": 0.0,
+      "_line": 25
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "DEFAULT",
+      "DIS-TRAN-TYPE-CD": "03",
+      "DIS-TRAN-CAT-CD": "0002",
+      "DIS-INT-RATE": 0.0,
+      "_line": 26
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "DEFAULT",
+      "DIS-TRAN-TYPE-CD": "03",
+      "DIS-TRAN-CAT-CD": "0003",
+      "DIS-INT-RATE": 0.0,
+      "_line": 27
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "DEFAULT",
+      "DIS-TRAN-TYPE-CD": "04",
+      "DIS-TRAN-CAT-CD": "0001",
+      "DIS-INT-RATE": 15.0,
+      "_line": 28
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "DEFAULT",
+      "DIS-TRAN-TYPE-CD": "04",
+      "DIS-TRAN-CAT-CD": "0002",
+      "DIS-INT-RATE": 15.0,
+      "_line": 29
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "DEFAULT",
+      "DIS-TRAN-TYPE-CD": "04",
+      "DIS-TRAN-CAT-CD": "0003",
+      "DIS-INT-RATE": 15.0,
+      "_line": 30
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "DEFAULT",
+      "DIS-TRAN-TYPE-CD": "05",
+      "DIS-TRAN-CAT-CD": "0001",
+      "DIS-INT-RATE": 15.0,
+      "_line": 31
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "DEFAULT",
+      "DIS-TRAN-TYPE-CD": "06",
+      "DIS-TRAN-CAT-CD": "0001",
+      "DIS-INT-RATE": 15.0,
+      "_line": 32
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "DEFAULT",
+      "DIS-TRAN-TYPE-CD": "06",
+      "DIS-TRAN-CAT-CD": "0002",
+      "DIS-INT-RATE": 15.0,
+      "_line": 33
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "DEFAULT",
+      "DIS-TRAN-TYPE-CD": "07",
+      "DIS-TRAN-CAT-CD": "0001",
+      "DIS-INT-RATE": 0.0,
+      "_line": 34
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "ZEROAPR",
+      "DIS-TRAN-TYPE-CD": "01",
+      "DIS-TRAN-CAT-CD": "0001",
+      "DIS-INT-RATE": 0.0,
+      "_line": 35
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "ZEROAPR",
+      "DIS-TRAN-TYPE-CD": "01",
+      "DIS-TRAN-CAT-CD": "0002",
+      "DIS-INT-RATE": 0.0,
+      "_line": 36
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "ZEROAPR",
+      "DIS-TRAN-TYPE-CD": "01",
+      "DIS-TRAN-CAT-CD": "0003",
+      "DIS-INT-RATE": 0.0,
+      "_line": 37
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "ZEROAPR",
+      "DIS-TRAN-TYPE-CD": "01",
+      "DIS-TRAN-CAT-CD": "0004",
+      "DIS-INT-RATE": 0.0,
+      "_line": 38
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "ZEROAPR",
+      "DIS-TRAN-TYPE-CD": "02",
+      "DIS-TRAN-CAT-CD": "0001",
+      "DIS-INT-RATE": 0.0,
+      "_line": 39
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "ZEROAPR",
+      "DIS-TRAN-TYPE-CD": "02",
+      "DIS-TRAN-CAT-CD": "0002",
+      "DIS-INT-RATE": 0.0,
+      "_line": 40
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "ZEROAPR",
+      "DIS-TRAN-TYPE-CD": "02",
+      "DIS-TRAN-CAT-CD": "0003",
+      "DIS-INT-RATE": 0.0,
+      "_line": 41
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "ZEROAPR",
+      "DIS-TRAN-TYPE-CD": "03",
+      "DIS-TRAN-CAT-CD": "0001",
+      "DIS-INT-RATE": 0.0,
+      "_line": 42
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "ZEROAPR",
+      "DIS-TRAN-TYPE-CD": "03",
+      "DIS-TRAN-CAT-CD": "0002",
+      "DIS-INT-RATE": 0.0,
+      "_line": 43
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "ZEROAPR",
+      "DIS-TRAN-TYPE-CD": "03",
+      "DIS-TRAN-CAT-CD": "0003",
+      "DIS-INT-RATE": 0.0,
+      "_line": 44
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "ZEROAPR",
+      "DIS-TRAN-TYPE-CD": "04",
+      "DIS-TRAN-CAT-CD": "0001",
+      "DIS-INT-RATE": 0.0,
+      "_line": 45
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "ZEROAPR",
+      "DIS-TRAN-TYPE-CD": "04",
+      "DIS-TRAN-CAT-CD": "0002",
+      "DIS-INT-RATE": 0.0,
+      "_line": 46
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "ZEROAPR",
+      "DIS-TRAN-TYPE-CD": "04",
+      "DIS-TRAN-CAT-CD": "0003",
+      "DIS-INT-RATE": 0.0,
+      "_line": 47
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "ZEROAPR",
+      "DIS-TRAN-TYPE-CD": "05",
+      "DIS-TRAN-CAT-CD": "0001",
+      "DIS-INT-RATE": 0.0,
+      "_line": 48
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "ZEROAPR",
+      "DIS-TRAN-TYPE-CD": "06",
+      "DIS-TRAN-CAT-CD": "0001",
+      "DIS-INT-RATE": 0.0,
+      "_line": 49
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "ZEROAPR",
+      "DIS-TRAN-TYPE-CD": "06",
+      "DIS-TRAN-CAT-CD": "0002",
+      "DIS-INT-RATE": 0.0,
+      "_line": 50
+    },
+    {
+      "DIS-ACCT-GROUP-ID": "ZEROAPR",
+      "DIS-TRAN-TYPE-CD": "07",
+      "DIS-TRAN-CAT-CD": "0001",
+      "DIS-INT-RATE": 0.0,
+      "_line": 51
+    }
+  ]
+}
