@@ -24,7 +24,8 @@
 5. [Shared Kernel Analysis](#5-shared-kernel-analysis)
 6. [Data Ownership Matrix](#6-data-ownership-matrix)
 7. [Anti-Corruption Layer Design](#7-anti-corruption-layer-design)
-8. [Extraction Priority & Sequencing](#8-extraction-priority--sequencing)
+8. [Bounded Context Internal Component Diagrams](#8-bounded-context-internal-component-diagrams)
+9. [Extraction Priority & Sequencing](#9-extraction-priority--sequencing)
 
 ---
 
@@ -586,7 +587,623 @@ During the migration, legacy COBOL programs and new Java services coexist. Anti-
 
 ---
 
-## 8. Extraction Priority & Sequencing
+## 8. Bounded Context Internal Component Diagrams
+
+Each bounded context's internal structure — aggregates, entities, value objects, domain services, and ports — modeled for the target Java/Spring architecture.
+
+### BC-1: Identity & Access — Internal Components
+
+```mermaid
+classDiagram
+    class User {
+        <<Aggregate Root>>
+        -UserId id
+        -Username username
+        -PasswordHash passwordHash
+        -UserType userType
+        -FirstName firstName
+        -LastName lastName
+        +authenticate(plaintext) : AuthResult
+        +changePassword(old, new) : void
+        +updateProfile(cmd) : void
+    }
+
+    class UserId {
+        <<Value Object>>
+        -String value
+    }
+
+    class UserType {
+        <<Enum>>
+        ADMIN
+        REGULAR
+    }
+
+    class AuthResult {
+        <<Value Object>>
+        -boolean success
+        -String jwtToken
+        -String failureReason
+    }
+
+    class AuthService {
+        <<Domain Service>>
+        +login(username, password) : AuthResult
+        +issueToken(User) : JwtToken
+        +validateToken(token) : UserClaims
+    }
+
+    class UserRepository {
+        <<Port>>
+        +findByUsername(String) : User
+        +findById(UserId) : User
+        +save(User) : void
+        +delete(UserId) : void
+        +findAll(Pageable) : Page~User~
+    }
+
+    class CommareaTranslator {
+        <<ACL>>
+        +toCommarea(JwtToken) : CommareaUserFields
+        +fromCommarea(CommareaUserFields) : UserClaims
+    }
+
+    User --> UserId
+    User --> UserType
+    AuthService --> User
+    AuthService --> AuthResult
+    AuthService --> UserRepository
+    AuthService --> CommareaTranslator
+```
+
+**COBOL → Java Mapping:**
+
+| COBOL Element | Java Component | Notes |
+|---|---|---|
+| `SEC-USER-DATA` (CSUSR01Y) | `User` entity | PIC X(08) password → bcrypt hash |
+| `SEC-USR-TYPE` 88-levels | `UserType` enum | `SEC-USR-TYPE-ADMIN` → `ADMIN` |
+| `COSGN00C` signon logic | `AuthService.login()` | VSAM READ → JPA query |
+| `COUSR00C–03C` CRUD | `UserRepository` methods | 4 programs → 1 repository |
+| `COCOM01Y` user fields | `CommareaTranslator` (ACL) | Only during transition |
+
+---
+
+### BC-2: Account Management — Internal Components
+
+```mermaid
+classDiagram
+    class Account {
+        <<Aggregate Root>>
+        -AccountId id
+        -AccountStatus status
+        -Money creditLimit
+        -Money currentBalance
+        -Money cashAdvanceLimit
+        -Date openDate
+        -Date expirationDate
+        -int version
+        +updateCreditLimit(Money) : void
+        +updateStatus(AccountStatus) : void
+        +applyBalanceChange(Money, String) : void
+    }
+
+    class Customer {
+        <<Entity>>
+        -CustomerId id
+        -PersonName name
+        -Address address
+        -PhoneNumber phone
+        -SSN ssn
+        -Date dateOfBirth
+        -int fico
+        +updatePersonalInfo(cmd) : void
+        +validateSSN() : boolean
+    }
+
+    class AccountId {
+        <<Value Object>>
+        -String value  %%PIC X(11)%%
+    }
+
+    class Money {
+        <<Value Object>>
+        -BigDecimal amount
+        -RoundingMode roundingMode
+        +add(Money) : Money
+        +subtract(Money) : Money
+    }
+
+    class SSN {
+        <<Value Object>>
+        -String value  %%PIC X(09)%%
+        +validate() : boolean
+        +masked() : String
+    }
+
+    class PhoneNumber {
+        <<Value Object>>
+        -String areaCode
+        -String number
+        +fromRedefines(byte[]) : PhoneNumber
+    }
+
+    class Address {
+        <<Value Object>>
+        -String line1
+        -String line2
+        -String city
+        -String state
+        -String zip
+        +validateState(LookupService) : boolean
+    }
+
+    class AccountRepository {
+        <<Port>>
+        +findById(AccountId) : Account
+        +save(Account) : void
+        +findAll(Pageable) : Page~Account~
+    }
+
+    class CustomerRepository {
+        <<Port>>
+        +findById(CustomerId) : Customer
+        +findByAccountId(AccountId) : Customer
+        +save(Customer) : void
+    }
+
+    class AccountService {
+        <<Domain Service>>
+        +viewAccount(AccountId) : AccountDetailDto
+        +updateAccount(AccountId, UpdateCmd) : void
+        +updateCustomer(CustomerId, UpdateCmd) : void
+        +onTransactionPosted(TransactionPostedEvent) : void
+        +onInterestCalculated(InterestCalculatedEvent) : void
+    }
+
+    class ValidationService {
+        <<Domain Service>>
+        +validateSSN(SSN) : boolean
+        +lookupAreaCode(String) : String
+        +validateState(String) : boolean
+    }
+
+    Account --> AccountId
+    Account --> Money
+    Customer --> SSN
+    Customer --> PhoneNumber
+    Customer --> Address
+    Account "1" --> "1" Customer : has
+    AccountService --> Account
+    AccountService --> Customer
+    AccountService --> AccountRepository
+    AccountService --> CustomerRepository
+    AccountService --> ValidationService
+```
+
+**COACTUPC Decomposition Map:**
+
+| COACTUPC Section (4,236 LOC) | Target Component | Est. LOC |
+|---|---|---|
+| Lines 1–200: Screen init, COMMAREA read | `AccountController` | ~50 |
+| Lines 201–800: Account field validation | `AccountService.updateAccount()` | ~150 |
+| Lines 801–1400: Customer field validation | `AccountService.updateCustomer()` | ~150 |
+| Lines 1401–1700: SSN parsing + validation | `ValidationService.validateSSN()` | ~30 |
+| Lines 1701–1900: Phone parsing (REDEFINES) | `PhoneNumber.fromRedefines()` | ~20 |
+| Lines 1901–2100: Area code lookup (CSLKPCDY) | `ValidationService.lookupAreaCode()` | ~10 (DB lookup) |
+| Lines 2101–2400: State code lookup | `ValidationService.validateState()` | ~10 (DB lookup) |
+| Lines 2401–3000: Date validation | `DateUtil` (shared library) | ~0 (reuse) |
+| Lines 3001–3600: VSAM I/O (5 files) | `AccountRepository`, `CustomerRepository` | ~0 (Spring Data) |
+| Lines 3601–4236: Error handling, GO TO targets, BMS map writes | `@ExceptionHandler` + validation annotations | ~50 |
+
+---
+
+### BC-3: Card Management — Internal Components
+
+```mermaid
+classDiagram
+    class Card {
+        <<Aggregate Root>>
+        -CardNumber cardNumber
+        -AccountId accountId
+        -CardStatus status
+        -Date expirationDate
+        -String cardholderName
+        -int version
+        +activate() : void
+        +deactivate() : void
+        +updateExpiration(Date) : void
+    }
+
+    class CardXref {
+        <<Entity>>
+        -CardNumber cardNumber
+        -AccountId accountId
+        -CustomerId customerId
+        +resolve() : AccountId
+    }
+
+    class CardNumber {
+        <<Value Object>>
+        -String value  %%PIC X(16)%%
+        +masked() : String
+    }
+
+    class CardStatus {
+        <<Enum>>
+        ACTIVE
+        INACTIVE
+        LOST
+        STOLEN
+        EXPIRED
+    }
+
+    class CardRepository {
+        <<Port>>
+        +findByCardNumber(CardNumber) : Card
+        +findByAccountId(AccountId, Pageable) : Page~Card~
+        +save(Card) : void
+    }
+
+    class CardXrefRepository {
+        <<Port>>
+        +findByCardNumber(CardNumber) : CardXref
+        +findByAccountId(AccountId) : List~CardXref~
+    }
+
+    class CardService {
+        <<Domain Service>>
+        +listCards(AccountId, page) : Page~CardSummaryDto~
+        +getCardDetail(CardNumber) : CardDetailDto
+        +updateCard(CardNumber, UpdateCmd) : void
+    }
+
+    Card --> CardNumber
+    Card --> CardStatus
+    Card --> AccountId
+    CardXref --> CardNumber
+    CardXref --> AccountId
+    CardService --> Card
+    CardService --> CardXref
+    CardService --> CardRepository
+    CardService --> CardXrefRepository
+```
+
+**State Machine Redesign (COCRDUPC 8-state → stateless REST):**
+
+```mermaid
+stateDiagram-v2
+    [*] --> ListCards: GET /cards?accountId=X
+    ListCards --> ViewCard: GET /cards/{num}
+    ViewCard --> EditForm: User clicks Edit
+    EditForm --> Validate: PUT /cards/{num}
+    Validate --> Success: 200 OK
+    Validate --> Conflict: 409 (version mismatch)
+    Validate --> ValidationError: 400 (invalid fields)
+    Conflict --> ViewCard: Refresh & retry
+    ValidationError --> EditForm: Fix & resubmit
+    Success --> ViewCard: Redirect
+```
+
+---
+
+### BC-4: Transaction Processing — Internal Components
+
+```mermaid
+classDiagram
+    class Transaction {
+        <<Aggregate Root>>
+        -TransactionId id
+        -AccountId accountId
+        -CardNumber cardNumber
+        -TransactionType type
+        -Money amount
+        -LocalDateTime timestamp
+        -String merchantId
+        -String description
+    }
+
+    class DailyTransaction {
+        <<Entity>>
+        -String recordId
+        -CardNumber cardNumber
+        -TransactionType type
+        -Money amount
+        -LocalDate transactionDate
+        +validate(CardXrefClient) : ValidationResult
+    }
+
+    class CategoryBalance {
+        <<Entity>>
+        -AccountId accountId
+        -TransactionCategory category
+        -Money balance
+        +addAmount(Money) : void
+    }
+
+    class TransactionPostingService {
+        <<Domain Service>>
+        +postDailyTransactions(List~DailyTransaction~) : PostingResult
+        -validateTransaction(DailyTransaction) : ValidationResult
+        -updateCategoryBalance(AccountId, Category, Money) : void
+        -publishTransactionPosted(Transaction) : void
+    }
+
+    class TransactionPostedEvent {
+        <<Domain Event>>
+        -TransactionId transactionId
+        -AccountId accountId
+        -Money amount
+        -Money newBalance
+    }
+
+    class TransactionRepository {
+        <<Port>>
+        +save(Transaction) : void
+        +findByAccountId(AccountId, Pageable) : Page~Transaction~
+        +findById(TransactionId) : Transaction
+    }
+
+    class TxnPostingJob {
+        <<Spring Batch Job>>
+        -ItemReader~DailyTransaction~ reader
+        -ItemProcessor processor
+        -ItemWriter~Transaction~ writer
+        +execute(JobParameters) : JobExecution
+    }
+
+    Transaction --> AccountId
+    Transaction --> CardNumber
+    Transaction --> Money
+    DailyTransaction --> CardNumber
+    DailyTransaction --> Money
+    CategoryBalance --> AccountId
+    CategoryBalance --> Money
+    TransactionPostingService --> Transaction
+    TransactionPostingService --> DailyTransaction
+    TransactionPostingService --> CategoryBalance
+    TransactionPostingService --> TransactionPostedEvent
+    TxnPostingJob --> TransactionPostingService
+    TxnPostingJob --> TransactionRepository
+```
+
+**CBTRN02C (731 LOC, score 14/15) → Spring Batch Mapping:**
+
+```
+CBTRN02C Processing Loop
+  │
+  ├─ READ DALYTRAN              → ItemReader<DailyTransaction>
+  │                                (FlatFileItemReader or JdbcCursorItemReader)
+  │
+  ├─ READ XREFFILE (card→acct)  → CardXrefClient.resolve(cardNumber)
+  │                                (API call to BC-3, cached)
+  │
+  ├─ Validate transaction       → ItemProcessor.process()
+  │   ├─ Check account exists   →   accountClient.exists(accountId)
+  │   └─ Validate type code     →   referenceDataClient.getType(code)
+  │
+  ├─ WRITE TRANSACT             → ItemWriter → transactionRepository.save()
+  │
+  ├─ REWRITE ACCTFILE (balance) → Publish TransactionPostedEvent
+  │                                (consumed by BC-2 Account Service)
+  │
+  ├─ REWRITE TCATBALF           → categoryBalanceRepository.save()
+  │
+  └─ WRITE DALYREJS (rejects)   → SkipListener → rejectRepository.save()
+```
+
+---
+
+### BC-5: Financial Calculation — Internal Components
+
+```mermaid
+classDiagram
+    class InterestCalculation {
+        <<Domain Service>>
+        +calculateInterest(AccountId) : InterestResult
+        +calculateForAllAccounts() : BatchResult
+        -lookupRate(DisclosureGroup, Category) : BigDecimal
+        -computeAmount(Money, BigDecimal, int) : Money
+    }
+
+    class DisclosureGroup {
+        <<Entity>>
+        -String groupId
+        -String description
+        -BigDecimal interestRate
+        -BigDecimal penaltyRate
+    }
+
+    class InterestResult {
+        <<Value Object>>
+        -AccountId accountId
+        -Money interestAmount
+        -Map~Category,Money~ perCategoryInterest
+    }
+
+    class InterestCalculatedEvent {
+        <<Domain Event>>
+        -AccountId accountId
+        -Money interestAmount
+        -LocalDate calculationDate
+    }
+
+    class CobolArithmetic {
+        <<Utility>>
+        +computeRounded(BigDecimal, BigDecimal, int) : BigDecimal
+        +truncateToScale(BigDecimal, int) : BigDecimal
+    }
+
+    class InterestCalcJob {
+        <<Spring Batch Job>>
+        -PeekableItemReader~AccountWithBalances~ reader
+        -InterestCalculation calculator
+        +execute(JobParameters) : JobExecution
+    }
+
+    InterestCalculation --> DisclosureGroup
+    InterestCalculation --> InterestResult
+    InterestCalculation --> InterestCalculatedEvent
+    InterestCalculation --> CobolArithmetic
+    InterestCalcJob --> InterestCalculation
+```
+
+**CBACT04C Account-Break Pattern → Spring Batch:**
+
+```
+CBACT04C: Sequential read, detect account-ID change → process group
+    │
+    ├─ COBOL pattern:
+    │   PERFORM UNTIL EOF
+    │     IF ACCT-ID NOT = PREV-ACCT-ID
+    │       PERFORM PROCESS-ACCOUNT-GROUP
+    │     END-IF
+    │     READ NEXT RECORD
+    │   END-PERFORM
+    │
+    └─ Spring Batch equivalent:
+        PeekableItemReader + GroupProcessor
+        - Reader: JdbcCursorItemReader (ORDER BY account_id)
+        - Processor: Accumulates records until account_id changes
+        - Writer: Writes InterestCalculatedEvent per account
+        
+        OR: SQL GROUP BY with window functions
+        SELECT account_id, category,
+               SUM(balance) as total_balance,
+               rate * SUM(balance) / 365 * days as interest
+        FROM category_balances cb
+        JOIN disclosure_groups dg ON ...
+        GROUP BY account_id, category
+```
+
+---
+
+### BC-8: Authorization & Fraud — Internal Components
+
+```mermaid
+classDiagram
+    class Authorization {
+        <<Aggregate Root>>
+        -AuthorizationId id
+        -AccountId accountId
+        -CardNumber cardNumber
+        -Money amount
+        -AuthStatus status
+        -LocalDateTime requestTime
+        -LocalDateTime responseTime
+        -String merchantId
+        +approve() : void
+        +decline(reason) : void
+    }
+
+    class AuthorizationDetail {
+        <<Entity>>
+        -AuthorizationId authId
+        -String detailType
+        -String detailValue
+    }
+
+    class FraudCheck {
+        <<Domain Service>>
+        +evaluate(AuthorizationRequest) : FraudScore
+        -checkVelocity(CardNumber) : int
+        -checkAmount(Money, Account) : RiskLevel
+        -checkMerchant(String) : RiskLevel
+    }
+
+    class FraudScore {
+        <<Value Object>>
+        -int score
+        -RiskLevel level
+        -List~String~ riskFactors
+    }
+
+    class AuthorizationService {
+        <<Domain Service>>
+        +processRequest(AuthRequest) : AuthResponse
+        -lookupAccount(AccountId) : AccountSummaryDto
+        -lookupCard(CardNumber) : CardSummaryDto
+        -checkFraud(AuthRequest) : FraudScore
+        -recordDecision(Authorization) : void
+    }
+
+    class AuthorizationRepository {
+        <<Port>>
+        +save(Authorization) : void
+        +findByAccountId(AccountId) : List~Authorization~
+        +findById(AuthorizationId) : Authorization
+        +purgeExpired(LocalDate) : int
+    }
+
+    Authorization --> AuthorizationDetail
+    Authorization --> AccountId
+    Authorization --> CardNumber
+    Authorization --> Money
+    AuthorizationService --> Authorization
+    AuthorizationService --> FraudCheck
+    AuthorizationService --> AuthorizationRepository
+    FraudCheck --> FraudScore
+```
+
+**IMS/MQ/DB2 → Spring/Kafka/PostgreSQL Migration:**
+
+| Legacy Component | Target Component | Migration Path |
+|---|---|---|
+| MQ MQGET (COPAUA0C) | Kafka Consumer (`@KafkaListener`) | Message bridge during transition |
+| MQ MQPUT1 (COPAUA0C) | Kafka Producer (`KafkaTemplate.send()`) | Same bridge |
+| IMS DLI GU/GN (PAUDBLOD) | JPA `findById()` / `findAll()` | Hierarchical → relational mapping |
+| IMS ISRT (PAUDBLOD) | JPA `save()` | Parent-child → `@OneToMany` |
+| DB2 SELECT (COPAUS2C) | JPA `@Query` / Spring Data query methods | Minimal SQL dialect changes |
+| CICS LINK (COPAUS1C→2C) | `@Service` method call | Direct invocation |
+
+---
+
+### BC-6, BC-7, BC-9 — Simplified Internal Components
+
+These contexts have simpler internal structures:
+
+```mermaid
+classDiagram
+    class StatementService {
+        <<BC-6: Billing>>
+        +generateStatement(AccountId, Period) : Statement
+        +processBillPayment(AccountId, Money) : PaymentResult
+    }
+
+    class ReportService {
+        <<BC-7: Reporting>>
+        +requestReport(ReportParams) : ReportId
+        +generateDailyTxnReport(LocalDate) : ReportOutput
+    }
+
+    class ReferenceDataService {
+        <<BC-9: Reference Data>>
+        +listTransactionTypes(Pageable) : Page~TransactionType~
+        +getTransactionType(String) : TransactionType
+        +updateTransactionType(String, UpdateCmd) : void
+        +listCategories() : List~TransactionCategory~
+    }
+
+    class TransactionType {
+        <<BC-9 Entity>>
+        -String typeCode
+        -String description
+        -TransactionCategory category
+    }
+
+    class TransactionCategory {
+        <<BC-9 Entity>>
+        -String categoryCode
+        -String description
+    }
+
+    ReferenceDataService --> TransactionType
+    ReferenceDataService --> TransactionCategory
+    TransactionType --> TransactionCategory
+```
+
+---
+
+## 9. Extraction Priority & Sequencing
 
 Based on seam analysis, coupling, and business risk:
 

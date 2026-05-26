@@ -19,8 +19,9 @@
 9. [Phase 6 — Data Migration & Decommission](#9-phase-6--data-migration--decommission)
 10. [Parallel-Run Validation Framework](#10-parallel-run-validation-framework)
 11. [Rollback Strategy](#11-rollback-strategy)
-12. [Go/No-Go Criteria Per Phase](#12-gono-go-criteria-per-phase)
-13. [Timeline Estimates](#13-timeline-estimates)
+12. [Automated Rollback Triggers](#12-automated-rollback-triggers)
+13. [Go/No-Go Criteria Per Phase](#13-gono-go-criteria-per-phase)
+14. [Timeline Estimates](#14-timeline-estimates)
 
 ---
 
@@ -599,7 +600,175 @@ Every phase supports rollback to the previous stable state.
 
 ---
 
-## 12. Go/No-Go Criteria Per Phase
+## 12. Automated Rollback Triggers
+
+While Section 11 describes *how* to roll back, this section defines *when* — the specific metric thresholds that trigger automatic rollback without requiring human decision-making. These triggers are implemented as alerting rules in the observability stack (Prometheus/Grafana/PagerDuty).
+
+### Trigger Architecture
+
+```
+┌──────────────────┐     ┌──────────────────┐     ┌──────────────────┐
+│  Java Services    │────▶│  Metrics          │────▶│  Alert Manager   │
+│  (Spring Boot     │     │  (Prometheus)     │     │  (Grafana/PD)    │
+│   Actuator)       │     │                  │     │                  │
+│                  │     │  error_rate       │     │  IF threshold    │
+│  - HTTP metrics   │     │  latency_p99     │     │    breached:     │
+│  - JPA metrics    │     │  dual_write_lag  │     │                  │
+│  - Batch metrics  │     │  balance_diff    │     │  1. Alert on-call│
+│  - Custom gauges  │     │  txn_throughput  │     │  2. Auto-rollback│
+└──────────────────┘     └──────────────────┘     │     (if enabled) │
+                                                  └────────┬─────────┘
+                                                           │
+                                                           ▼
+                                                  ┌──────────────────┐
+                                                  │  API Gateway      │
+                                                  │  Route Switch     │
+                                                  │                  │
+                                                  │  Java → CICS     │
+                                                  │  (per-service)   │
+                                                  └──────────────────┘
+```
+
+### Phase 1 Triggers — Identity & User Admin
+
+| Trigger ID | Metric | Threshold | Window | Action | Severity |
+|------------|--------|-----------|--------|--------|----------|
+| T-1.1 | Auth endpoint error rate (`/api/auth/login` 5xx) | > 1% of requests | 5 min rolling | **Auto-rollback** to CICS CC00 signon | P1 |
+| T-1.2 | Auth endpoint latency (p99) | > 2,000 ms | 5 min rolling | Alert on-call; auto-rollback if sustained 15 min | P2 |
+| T-1.3 | JWT validation failure rate | > 0.5% of requests | 5 min rolling | **Auto-rollback** — users can't access any screen | P1 |
+| T-1.4 | COMMAREA ACL translation errors | > 0 errors | 1 min | Alert on-call; auto-rollback if > 10 errors in 5 min | P1 |
+| T-1.5 | User CRUD 5xx error rate | > 2% of requests | 10 min rolling | Alert on-call; manual rollback decision | P2 |
+
+**Rollback action:** API Gateway switches `/api/auth/*` and `/api/users/*` routes to CICS. COMMAREA ACL is bypassed (CICS handles auth natively).
+
+### Phase 2 Triggers — Reference Data & Read-Only Screens
+
+| Trigger ID | Metric | Threshold | Window | Action | Severity |
+|------------|--------|-----------|--------|--------|----------|
+| T-2.1 | Read endpoint error rate (any `/api/accounts/*/view`, `/api/cards/*`, `/api/transactions/*`) | > 2% of requests | 5 min rolling | **Auto-rollback** affected endpoint to CICS | P2 |
+| T-2.2 | Data discrepancy (Java response ≠ CICS response for same query) | > 0 mismatches | Per-request (shadow mode) | Alert on-call immediately; halt shadow traffic | P1 |
+| T-2.3 | Tx Type CRUD error rate | > 1% of requests | 5 min rolling | **Auto-rollback** to CICS COTRTLIC/COTRTUPC | P2 |
+| T-2.4 | Tx Type DB2 ↔ PostgreSQL sync lag | > 60 seconds | Continuous | Alert on-call; pause Tx Type writes until sync catches up | P2 |
+| T-2.5 | Read endpoint latency (p99) | > 3,000 ms | 5 min rolling | Alert on-call; auto-rollback if sustained 15 min | P3 |
+
+**Rollback action:** Per-endpoint rollback via API Gateway. Each read screen can be independently routed back to CICS.
+
+### Phase 3 Triggers — Data Entry Screens
+
+| Trigger ID | Metric | Threshold | Window | Action | Severity |
+|------------|--------|-----------|--------|--------|----------|
+| T-3.1 | Write endpoint error rate (`PUT /api/cards/*`, `POST /api/transactions`) | > 0.5% of requests | 5 min rolling | **Auto-rollback** affected write endpoint to CICS | P1 |
+| T-3.2 | Dual-write failure rate (PostgreSQL write succeeds, VSAM write fails or vice versa) | > 0 failures | Per-request | **Alert on-call immediately**; auto-rollback if > 5 failures in 10 min | P1 |
+| T-3.3 | Dual-write lag (VSAM ↔ PostgreSQL record count delta) | > 10 records | 5 min check | Alert on-call; halt new writes if delta > 50 | P1 |
+| T-3.4 | Optimistic lock conflict rate | > 5% of update requests | 10 min rolling | Alert on-call (may indicate design issue, not rollback) | P2 |
+| T-3.5 | Nightly reconciliation discrepancy count | > 0 records | Daily batch | **Halt all Phase 3 writes**; alert on-call + migration lead | P1 |
+| T-3.6 | Card Update API — data corruption (field value outside valid range) | > 0 occurrences | Per-request | **Immediate auto-rollback** + alert | P1 |
+
+**Rollback action:** Route write screens back to CICS. Run PostgreSQL → VSAM resync for any records written only to PostgreSQL.
+
+### Phase 4 Triggers — Batch Pipeline
+
+| Trigger ID | Metric | Threshold | Window | Action | Severity |
+|------------|--------|-----------|--------|--------|----------|
+| T-4.1 | Parallel-run balance discrepancy (any account) | > $0.00 | Per-run | **Halt Java batch pipeline**; alert migration lead + financial SME; investigate before next run | P1 |
+| T-4.2 | Parallel-run reject count mismatch | COBOL rejects ≠ Java rejects | Per-run | Alert on-call; investigate within 24 hours | P2 |
+| T-4.3 | Parallel-run report diff | Any character difference in report output | Per-run | Alert on-call; investigate within 24 hours | P2 |
+| T-4.4 | Java batch job execution time | > 150% of COBOL batch window | Per-run | Alert on-call; tune before next billing cycle | P2 |
+| T-4.5 | Java batch job failure (Spring Batch `FAILED` status) | Any failure | Per-run | **Auto-revert to COBOL pipeline** for that run; alert on-call | P1 |
+| T-4.6 | Interest calculation discrepancy (per-account) | > $0.00 | Per-run | **Halt interest posting**; revert to COBOL CBACT04C; alert financial SME | P1 |
+| T-4.7 | Transaction category balance mismatch | > $0.00 in any category | Per-run | Alert on-call; investigate before next run | P1 |
+| T-4.8 | Consecutive failed parallel-run cycles | > 2 cycles with unresolved discrepancies | Per-cycle | **Escalate to executive sponsor**; consider reverting to Phase 3 | P1 |
+
+**Rollback action:** Revert to COBOL batch pipeline (POSTTRAN/INTCALC JCL). Discard Java batch output; VSAM data from COBOL run is authoritative.
+
+### Phase 5 Triggers — Complex Screens & Sub-Applications
+
+| Trigger ID | Metric | Threshold | Window | Action | Severity |
+|------------|--------|-----------|--------|--------|----------|
+| T-5.1 | Account Update API error rate (`PUT /api/accounts/*`, `PUT /api/customers/*`) | > 0.5% of requests | 5 min rolling | **Auto-rollback** to CICS COACTUPC | P1 |
+| T-5.2 | Account Update — data corruption (balance, credit limit, or PII incorrect after update) | > 0 occurrences | Per-request (audit log comparison) | **Immediate auto-rollback**; freeze account updates; alert migration lead | P1 |
+| T-5.3 | Authorization Service error rate | > 0.1% of requests | 5 min rolling | **Auto-rollback** to legacy auth (CICS + MQ) | P1 |
+| T-5.4 | Authorization Service latency (p99) | > 500 ms | 5 min rolling | Alert on-call; auto-rollback if sustained 10 min (auth is latency-critical) | P1 |
+| T-5.5 | Kafka consumer lag (auth request topic) | > 1,000 messages | Continuous | Alert on-call; auto-rollback if lag > 5,000 | P1 |
+| T-5.6 | Fraud detection false-positive rate | > 2x baseline from COBOL system | Daily comparison | Alert fraud team; adjust rules before next day | P2 |
+| T-5.7 | Auth decision discrepancy (Java approve ↔ COBOL decline or vice versa for same request in shadow mode) | > 0 mismatches | Per-request (shadow mode) | Alert on-call + fraud team; investigate before going live | P1 |
+
+**Rollback action:** Route Account Update back to CICS. Switch auth processing back to legacy MQ → COPAUA0C path.
+
+### Phase 6 Triggers — Data Migration & Decommission
+
+| Trigger ID | Metric | Threshold | Window | Action | Severity |
+|------------|--------|-----------|--------|--------|----------|
+| T-6.1 | Migration validation failure (record count mismatch) | Any dataset row count VSAM ≠ PostgreSQL | Per-migration run | **Halt migration**; do not proceed to next dataset | P1 |
+| T-6.2 | Migration validation failure (field checksum mismatch) | Any field in any record | Per-migration run | **Halt migration**; investigate and re-run | P1 |
+| T-6.3 | Post-migration application error rate (all services) | > 1% of requests | 5 min rolling | Alert on-call; if sustained 30 min, begin VSAM restore | P1 |
+| T-6.4 | Post-migration query performance degradation | > 200% of pre-migration latency for any endpoint | 15 min rolling | Alert on-call; add indexes or optimize queries | P2 |
+| T-6.5 | Days since successful migration without incident | < 30 days | Continuous | **Do not decommission** VSAM/CICS until 30 clean days | Gate |
+
+**Rollback action:** Restore VSAM datasets from backup; restart CICS region. This is the most disruptive rollback and requires 4+ hours. Only triggered as a last resort.
+
+### Trigger Implementation
+
+**Prometheus alerting rules (example for T-3.1):**
+
+```yaml
+groups:
+  - name: phase3_rollback_triggers
+    rules:
+      - alert: WriteEndpointErrorRate
+        expr: |
+          (
+            sum(rate(http_server_requests_seconds_count{uri=~"/api/cards/.*|/api/transactions",status=~"5.."}[5m]))
+            /
+            sum(rate(http_server_requests_seconds_count{uri=~"/api/cards/.*|/api/transactions"}[5m]))
+          ) > 0.005
+        for: 5m
+        labels:
+          severity: P1
+          phase: "3"
+          action: auto_rollback
+        annotations:
+          summary: "Write endpoint error rate > 0.5% for 5 minutes"
+          rollback: "Route PUT /api/cards/* and POST /api/transactions to CICS"
+          runbook: "https://wiki.internal/runbooks/phase3-rollback"
+```
+
+**Auto-rollback controller (Spring Cloud Gateway):**
+
+```yaml
+# Rollback is a route weight change — no deployment needed
+# Triggered by PagerDuty webhook → Gateway Admin API
+rollback_actions:
+  phase1:
+    routes: ["/api/auth/**", "/api/users/**"]
+    target: cics_backend
+    recovery_time: "< 5 minutes"
+  phase2:
+    routes: ["/api/accounts/*/view", "/api/cards/*/detail", "/api/transactions/list"]
+    target: cics_backend
+    recovery_time: "< 5 minutes"
+  phase3:
+    routes: ["/api/cards/**", "/api/transactions", "/api/billing/payments"]
+    target: cics_backend
+    post_rollback: "run postgresql_to_vsam_resync.sh"
+    recovery_time: "< 30 minutes"
+  phase5:
+    routes: ["/api/accounts/**", "/api/customers/**", "/api/auth/authorize"]
+    target: cics_backend
+    recovery_time: "< 30 minutes"
+```
+
+### Escalation Matrix
+
+| Severity | Response Time | Responder | Rollback Authority |
+|----------|--------------|-----------|--------------------|
+| **P1** | < 5 minutes | On-call engineer + migration lead | Automated (or on-call engineer) |
+| **P2** | < 30 minutes | On-call engineer | On-call engineer (manual decision) |
+| **P3** | < 4 hours | Team lead | Team lead (next business day) |
+
+---
+
+## 13. Go/No-Go Criteria Per Phase
 
 | Phase | Go Criteria | No-Go Triggers |
 |-------|------------|----------------|
@@ -613,7 +782,7 @@ Every phase supports rollback to the previous stable state.
 
 ---
 
-## 13. Timeline Estimates
+## 14. Timeline Estimates
 
 ### Conservative Estimate (Small Team: 4–6 Engineers)
 
