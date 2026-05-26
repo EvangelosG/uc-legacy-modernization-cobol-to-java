@@ -1,5 +1,6 @@
 package com.carddemo.batch.config;
 
+import com.carddemo.batch.job.AuthorizationPurgeJob;
 import com.carddemo.batch.job.DailyTransactionPostingJob;
 import com.carddemo.batch.job.DailyTransactionReportJob;
 import com.carddemo.batch.job.InterestCalculationJob;
@@ -191,6 +192,33 @@ public class BatchConfig {
             return RepeatStatus.FINISHED;
         };
         return new StepBuilder("statementStep", jobRepository)
+                .tasklet(tasklet, txManager)
+                .build();
+    }
+
+    // ── Authorization Purge Job (CBPAUP0C) ──
+
+    @Bean
+    public Job authorizationPurgeBatchJob(JobRepository jobRepository, Step purgeStep,
+                                       BatchJobListener listener) {
+        return new JobBuilder("authorizationPurgeJob", jobRepository)
+                .listener(listener)
+                .start(purgeStep)
+                .build();
+    }
+
+    @Bean
+    public Step purgeStep(JobRepository jobRepository,
+                          PlatformTransactionManager txManager,
+                          AuthorizationPurgeJob job) {
+        Tasklet tasklet = (contribution, chunkContext) -> {
+            String daysParam = (String) chunkContext.getStepContext()
+                    .getJobParameters().get("expiryDays");
+            Integer expiryDays = daysParam != null ? Integer.parseInt(daysParam) : null;
+            job.execute(expiryDays);
+            return RepeatStatus.FINISHED;
+        };
+        return new StepBuilder("purgeStep", jobRepository)
                 .tasklet(tasklet, txManager)
                 .build();
     }
