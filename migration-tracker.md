@@ -1,0 +1,143 @@
+# CardDemo COBOL-to-Java Migration Tracker
+
+## Overview
+
+| Metric | Value |
+|--------|-------|
+| Total COBOL Programs | 43 |
+| Total LOC (COBOL) | ~28,000 |
+| Migration Start Date | 2026-05-26 |
+| Current Phase | Phase 0 — Not Started |
+| Overall Status | **In Progress** |
+
+## Phase Summary
+
+| Phase | Name | Status | Child Session | Programs | Validation |
+|-------|------|--------|---------------|----------|------------|
+| 0 | Infrastructure & Foundation | Pending | — | Copybooks → DTOs, CSUTLDTC, COBSWAIT | `mvn compile` + `mvn test` |
+| 1 | Identity, Menus & User Admin | Pending | — | COSGN00C, COMEN01C, COADM01C, COUSR00C–03C | Auth flow + CRUD tests |
+| 2 | Reference Data & Read-Only Screens | Pending | — | COTRTLIC, COTRTUPC, COACTVWC, COCRDSLC, COTRN00C/01C, CORPT00C, COBIL00C (read), COPAUS0C/1C | Read endpoint tests |
+| 3 | Data Entry Screens | Pending | — | COCRDLIC, COCRDUPC, COTRN02C (online), COBIL00C (write) | Optimistic locking + write tests |
+| 4 | Batch Pipeline | Pending | — | CBTRN01C, CBTRN02C, CBACT04C, CBTRN03C, CBSTM03A/B | Zero-tolerance financial tests |
+| 5 | Complex Screens & Sub-Apps | Pending | — | COACTUPC, COPAUA0C, COPAUS2C, CBPAUP0C, CODATE01, COACCT01 | Decomposition validation |
+| 6 | Data Migration & Decommission | Pending | — | CBEXPORT, CBIMPORT, CBACT01C–03C, CBCUS01C | E2E migration tests |
+
+## Detailed Program Migration Status
+
+### Phase 0 — Infrastructure & Foundation
+
+| COBOL Artifact | Java Target | Status | Notes |
+|----------------|-------------|--------|-------|
+| CVACT01Y.cpy | Account.java (entity) | Pending | 300 bytes, account record |
+| CVACT02Y.cpy | Card.java (entity) | Pending | 150 bytes, card record |
+| CVACT03Y.cpy | CardCrossReference.java (entity) | Pending | 50 bytes, card xref |
+| CVCUS01Y.cpy | Customer.java (entity) | Pending | 500 bytes, customer record |
+| CVTRA05Y.cpy | Transaction.java (entity) | Pending | 350 bytes, transaction record |
+| CVTRA06Y.cpy | DailyTransaction.java (entity) | Pending | 350 bytes, daily transaction |
+| CVTRA01Y.cpy | TransactionCategoryBalance.java (entity) | Pending | 50 bytes, composite key |
+| CVTRA02Y.cpy | DisclosureGroup.java (entity) | Pending | 50 bytes, composite key |
+| CVTRA03Y.cpy | TransactionType.java (entity) | Pending | 60 bytes, tx type |
+| CVTRA04Y.cpy | TransactionCategory.java (entity) | Pending | 60 bytes, tx category |
+| CSUSR01Y.cpy | UserSecurity.java (entity) | Pending | 80 bytes, user security |
+| COCOM01Y.cpy | CardDemoSession.java (DTO) | Pending | COMMAREA layout |
+| CSUTLDTC.cbl | DateUtil.java | Pending | 157 LOC, date utility |
+| COBSWAIT.cbl | — (eliminated) | Pending | 41 LOC, wait utility |
+| CSLKPCDY.cpy | LookupService.java | Pending | 1,318-line area code table |
+| CODATECN.cpy | DateUtil.java | Pending | Date conversion |
+| Flyway V001–V012 | SQL migrations | Pending | Database schema + seed data |
+| Value objects | Money, CardNumber, typed IDs | Pending | Domain value objects |
+
+### Phase 1 — Identity, Menus & User Admin
+
+| COBOL Program | LOC | Java Target | Status | Notes |
+|---------------|-----|-------------|--------|-------|
+| COSGN00C.cbl | 260 | AuthController + AuthService | Pending | JWT-based auth |
+| COMEN01C.cbl | 308 | MenuController | Pending | Regular user menu |
+| COADM01C.cbl | 288 | MenuController | Pending | Admin menu |
+| COUSR00C.cbl | 695 | UserController (GET list) | Pending | Paginated user list |
+| COUSR01C.cbl | 299 | UserController (POST) | Pending | Create user |
+| COUSR02C.cbl | 414 | UserController (PUT) | Pending | Update user |
+| COUSR03C.cbl | 359 | UserController (DELETE) | Pending | Delete user |
+
+### Phase 2 — Reference Data & Read-Only Screens
+
+| COBOL Program | LOC | Java Target | Status | Notes |
+|---------------|-----|-------------|--------|-------|
+| COTRTLIC.cbl | 2,098 | TransactionTypeController (REWRITE) | Pending | 28 GO TOs, DB2+CICS |
+| COTRTUPC.cbl | 1,702 | TransactionTypeController (REWRITE) | Pending | 23 GO TOs, DB2+CICS |
+| COBTUPDT.cbl | 237 | TransactionTypeService | Pending | Batch tx type maintenance |
+| COACTVWC.cbl | 941 | AccountController (GET) | Pending | Account view |
+| COCRDSLC.cbl | 887 | CardController (GET) | Pending | Card detail/select |
+| COTRN00C.cbl | 699 | TransactionController (GET list) | Pending | Transaction list |
+| COTRN01C.cbl | 330 | TransactionController (GET detail) | Pending | Transaction view |
+| CORPT00C.cbl | 649 | ReportController | Pending | Report request |
+| COBIL00C.cbl | 572 | BillingController (GET) | Pending | Bill payment (read) |
+| COPAUS0C.cbl | 1,032 | AuthorizationViewController (GET) | Pending | Auth summary |
+| COPAUS1C.cbl | 604 | AuthorizationViewController (GET) | Pending | Auth detail |
+
+### Phase 3 — Data Entry Screens
+
+| COBOL Program | LOC | Java Target | Status | Notes |
+|---------------|-----|-------------|--------|-------|
+| COCRDLIC.cbl | 1,459 | CardController (GET list) | Pending | 16 GO TOs, card browse |
+| COCRDUPC.cbl | 1,560 | CardController (PUT) — REWRITE | Pending | 21 GO TOs, 8-state machine → stateless REST |
+| COTRN02C.cbl | 783 | TransactionController (POST) | Pending | Online transaction add |
+| COBIL00C.cbl | 572 | BillingController (POST) | Pending | Bill payment (write) |
+
+### Phase 4 — Batch Pipeline (HIGHEST RISK)
+
+| COBOL Program | LOC | Hotspot Score | Java Target | Status | Notes |
+|---------------|-----|---------------|-------------|--------|-------|
+| CBTRN01C.cbl | 494 | 9 | TransactionInitJob | Pending | Transaction file init |
+| CBTRN02C.cbl | 731 | **14** | DailyTransactionPostingJob | Pending | **CRITICAL** — daily posting |
+| CBACT04C.cbl | 652 | **14** | InterestCalculationJob | Pending | **CRITICAL** — interest calc |
+| CBTRN03C.cbl | 649 | 10 | DailyTransactionReportJob | Pending | Multi-level break report |
+| CBSTM03A.CBL | — | 10 | StatementGenerationJob | Pending | Statement generation |
+| CBSTM03B.CBL | — | — | StatementGenerationJob | Pending | Statement subroutine |
+
+### Phase 5 — Complex Screens & Sub-Applications
+
+| COBOL Program | LOC | Hotspot Score | Java Target | Status | Notes |
+|---------------|-----|---------------|-------------|--------|-------|
+| COACTUPC.cbl | 4,236 | **15** | AccountUpdateService + CustomerUpdateService + ValidationService — REWRITE | Pending | Most complex program |
+| COPAUA0C.cbl | 1,026 | 10 | AuthorizationService | Pending | MQ-based auth → REST |
+| COPAUS2C.cbl | 244 | 7 | FraudDetectionService | Pending | DB2 fraud check |
+| CBPAUP0C.cbl | 386 | 7 | AuthorizationPurgeJob | Pending | Batch purge |
+| CODATE01.cbl | 524 | 6 | SystemController (GET) | Pending | MQ date inquiry → REST |
+| COACCT01.cbl | 620 | 6 | AccountController (GET extract) | Pending | MQ account inquiry → REST |
+
+### Phase 6 — Data Migration & Decommission
+
+| COBOL Program | LOC | Java Target | Status | Notes |
+|---------------|-----|-------------|--------|-------|
+| CBEXPORT.cbl | 582 | DataExportService | Pending | Data export |
+| CBIMPORT.cbl | 487 | DataImportService | Pending | Data import |
+| CBACT01C.cbl | 430 | — (replaced by Flyway V012) | Pending | Account file init |
+| CBACT02C.cbl | 178 | — (replaced by Flyway V012) | Pending | Card file init |
+| CBACT03C.cbl | 178 | — (replaced by Flyway V012) | Pending | Xref file init |
+| CBCUS01C.cbl | 178 | — (replaced by Flyway V012) | Pending | Customer file init |
+| VsamToPostgresqlMigrator | — | VsamToPostgresqlMigrator.java | Pending | ETL tool |
+| MigrationValidationService | — | MigrationValidationService.java | Pending | Automated comparison |
+
+## Go/No-Go Criteria (from CUTOVER_PLAN.md Section 13)
+
+- [ ] All `mvn compile` passes across all modules
+- [ ] All `mvn test` passes with 100% green
+- [ ] Flyway migrations run successfully against PostgreSQL
+- [ ] All seed data loads without errors
+- [ ] JWT authentication flow works end-to-end
+- [ ] All CRUD operations pass with role-based access
+- [ ] All read-only endpoints return correct data matching COBOL output
+- [ ] Optimistic locking produces 409 Conflict on concurrent updates
+- [ ] Transaction posting produces identical balances as COBOL CBTRN02C
+- [ ] Interest calculation matches COBOL CBACT04C to the penny
+- [ ] COACTUPC decomposition passes all validation rule tests
+- [ ] All ASCII data files load into PostgreSQL with matching row counts
+- [ ] Zero orphan records (referential integrity)
+- [ ] Full batch cycle runs successfully against migrated data
+
+## Change Log
+
+| Date | Phase | Action | Details |
+|------|-------|--------|---------|
+| 2026-05-26 | Setup | Project skeleton created | Maven multi-module structure at carddemo-java/ |
