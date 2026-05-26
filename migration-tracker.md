@@ -7,7 +7,7 @@
 | Total COBOL Programs | 43 |
 | Total LOC (COBOL) | ~28,000 |
 | Migration Start Date | 2026-05-26 |
-| Current Phase | Phase 2 — Pending |
+| Current Phase | Phase 3 — Pending |
 | Overall Status | **In Progress** |
 
 ## Phase Summary
@@ -16,7 +16,7 @@
 |-------|------|--------|---------------|----------|------------|
 | 0 | Infrastructure & Foundation | **Done** | [d2db011](https://outpostai.devinenterprise.com/sessions/d2db011778f4423388673422e0876ede) | Copybooks → DTOs, CSUTLDTC, COBSWAIT | `mvn compile` + `mvn test` — 82 tests pass |
 | 1 | Identity, Menus & User Admin | **Done** | [ff4b49c](https://outpostai.devinenterprise.com/sessions/ff4b49c4dcd14c9c86276bbf6e1b609a) | COSGN00C, COMEN01C, COADM01C, COUSR00C–03C | 117 tests pass (19 new) |
-| 2 | Reference Data & Read-Only Screens | Pending | — | COTRTLIC, COTRTUPC, COACTVWC, COCRDSLC, COTRN00C/01C, CORPT00C, COBIL00C (read), COPAUS0C/1C | Read endpoint tests |
+| 2 | Reference Data & Read-Only Screens | **Done** | [bfd08a5](https://outpostai.devinenterprise.com/sessions/bfd08a5920604f96a8c4714b36cf8416) | COTRTLIC, COTRTUPC, COACTVWC, COCRDSLC, COTRN00C/01C, CORPT00C, COBIL00C (read), COPAUS0C/1C | 150 tests pass (52 new) |
 | 3 | Data Entry Screens | Pending | — | COCRDLIC, COCRDUPC, COTRN02C (online), COBIL00C (write) | Optimistic locking + write tests |
 | 4 | Batch Pipeline | Pending | — | CBTRN01C, CBTRN02C, CBACT04C, CBTRN03C, CBSTM03A/B | Zero-tolerance financial tests |
 | 5 | Complex Screens & Sub-Apps | Pending | — | COACTUPC, COPAUA0C, COPAUS2C, CBPAUP0C, CODATE01, COACCT01 | Decomposition validation |
@@ -63,17 +63,17 @@
 
 | COBOL Program | LOC | Java Target | Status | Notes |
 |---------------|-----|-------------|--------|-------|
-| COTRTLIC.cbl | 2,098 | TransactionTypeController (REWRITE) | Pending | 28 GO TOs, DB2+CICS |
-| COTRTUPC.cbl | 1,702 | TransactionTypeController (REWRITE) | Pending | 23 GO TOs, DB2+CICS |
-| COBTUPDT.cbl | 237 | TransactionTypeService | Pending | Batch tx type maintenance |
-| COACTVWC.cbl | 941 | AccountController (GET) | Pending | Account view |
-| COCRDSLC.cbl | 887 | CardController (GET) | Pending | Card detail/select |
-| COTRN00C.cbl | 699 | TransactionController (GET list) | Pending | Transaction list |
-| COTRN01C.cbl | 330 | TransactionController (GET detail) | Pending | Transaction view |
-| CORPT00C.cbl | 649 | ReportController | Pending | Report request |
-| COBIL00C.cbl | 572 | BillingController (GET) | Pending | Bill payment (read) |
-| COPAUS0C.cbl | 1,032 | AuthorizationViewController (GET) | Pending | Auth summary |
-| COPAUS1C.cbl | 604 | AuthorizationViewController (GET) | Pending | Auth detail |
+| COTRTLIC.cbl | 2,098 | TransactionTypeController (REWRITE) | **Done** | 28 GO TOs, DB2+CICS |
+| COTRTUPC.cbl | 1,702 | TransactionTypeController (REWRITE) | **Done** | 23 GO TOs, DB2+CICS |
+| COBTUPDT.cbl | 237 | TransactionTypeService | **Done** | Batch tx type maintenance |
+| COACTVWC.cbl | 941 | AccountController (GET) | **Done** | Account view |
+| COCRDSLC.cbl | 887 | CardController (GET) | **Done** | Card detail/select |
+| COTRN00C.cbl | 699 | TransactionController (GET list) | **Done** | Transaction list |
+| COTRN01C.cbl | 330 | TransactionController (GET detail) | **Done** | Transaction view |
+| CORPT00C.cbl | 649 | ReportController | **Done** | Report request |
+| COBIL00C.cbl | 572 | BillingController (GET) | **Done** | Bill payment (read) |
+| COPAUS0C.cbl | 1,032 | AuthorizationViewController (GET) | **Done** | Auth summary |
+| COPAUS1C.cbl | 604 | AuthorizationViewController (GET) | **Done** | Auth detail |
 
 ### Phase 3 — Data Entry Screens
 
@@ -143,3 +143,4 @@
 | 2026-05-26 | Setup | Project skeleton created | Maven multi-module structure at carddemo-java/ |
 | 2026-05-26 | Phase 0 | **Completed** | 65 files, 4,137 LOC, 82 tests pass. 11 entities, 6 VOs, 11 repos, 12 Flyway migrations, 3 utils, 1 DTO |
 | 2026-05-26 | Phase 1 | **Completed** | JWT auth, menu routing, user CRUD. 117 tests pass (35 new service+web tests) |
+| 2026-05-26 | Phase 2 | **Completed** | 7 controllers, 7 services, tx type CRUD, read-only views. 150 tests pass (52 new) |
