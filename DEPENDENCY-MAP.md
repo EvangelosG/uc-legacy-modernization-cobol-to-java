@@ -1,7 +1,7 @@
 # CardDemo Dependency Map
 
 Call graph and data lineage for every program, JCL job, and dataset in the
-CardDemo application.  Cross-references `CATALOG.md`, `DATA-DICTIONARY.md`,
+CardDemo application.  Cross-references `APPLICATION_INVENTORY.md`, `DATA-DICTIONARY.md`,
 and `HOTSPOT-ANALYSIS.md`.
 
 ---
@@ -768,4 +768,4 @@ Programs that are XCTL targets of multiple callers (high fan-in):
 
 *Generated from source analysis of `app/cbl/`, `app/app-*/cbl/`,
 `app/cpy/`, `app/cpy-bms/`, `app/app-*/cpy/`, and `app/jcl/`.*
-*Cross-references: [CATALOG.md](CATALOG.md) · [DATA-DICTIONARY.md](DATA-DICTIONARY.md) · [HOTSPOT-ANALYSIS.md](HOTSPOT-ANALYSIS.md)*
+*Cross-references: [APPLICATION_INVENTORY.md](APPLICATION_INVENTORY.md) · [DATA-DICTIONARY.md](DATA-DICTIONARY.md) · [HOTSPOT-ANALYSIS.md](HOTSPOT-ANALYSIS.md)*

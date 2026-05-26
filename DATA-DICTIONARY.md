@@ -904,4 +904,4 @@ CUSTOMER (CVCUS01Y)
 
 ---
 
-*Generated from CardDemo copybooks in `app/cpy/`, `app/app-authorization-ims-db2-mq/cpy/`, `app/app-transaction-type-db2/cpy/`, and DCL files. Cross-reference with `CATALOG.md` for the full artifact inventory.*
+*Generated from CardDemo copybooks in `app/cpy/`, `app/app-authorization-ims-db2-mq/cpy/`, `app/app-transaction-type-db2/cpy/`, and DCL files. Cross-reference with `APPLICATION_INVENTORY.md` for the full artifact inventory.*
