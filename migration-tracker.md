@@ -7,7 +7,7 @@
 | Total COBOL Programs | 43 |
 | Total LOC (COBOL) | ~28,000 |
 | Migration Start Date | 2026-05-26 |
-| Current Phase | Phase 1 — Pending |
+| Current Phase | Phase 2 — Pending |
 | Overall Status | **In Progress** |
 
 ## Phase Summary
@@ -15,7 +15,7 @@
 | Phase | Name | Status | Child Session | Programs | Validation |
 |-------|------|--------|---------------|----------|------------|
 | 0 | Infrastructure & Foundation | **Done** | [d2db011](https://outpostai.devinenterprise.com/sessions/d2db011778f4423388673422e0876ede) | Copybooks → DTOs, CSUTLDTC, COBSWAIT | `mvn compile` + `mvn test` — 82 tests pass |
-| 1 | Identity, Menus & User Admin | Pending | — | COSGN00C, COMEN01C, COADM01C, COUSR00C–03C | Auth flow + CRUD tests |
+| 1 | Identity, Menus & User Admin | **Done** | [ff4b49c](https://outpostai.devinenterprise.com/sessions/ff4b49c4dcd14c9c86276bbf6e1b609a) | COSGN00C, COMEN01C, COADM01C, COUSR00C–03C | 117 tests pass (19 new) |
 | 2 | Reference Data & Read-Only Screens | Pending | — | COTRTLIC, COTRTUPC, COACTVWC, COCRDSLC, COTRN00C/01C, CORPT00C, COBIL00C (read), COPAUS0C/1C | Read endpoint tests |
 | 3 | Data Entry Screens | Pending | — | COCRDLIC, COCRDUPC, COTRN02C (online), COBIL00C (write) | Optimistic locking + write tests |
 | 4 | Batch Pipeline | Pending | — | CBTRN01C, CBTRN02C, CBACT04C, CBTRN03C, CBSTM03A/B | Zero-tolerance financial tests |
@@ -51,13 +51,13 @@
 
 | COBOL Program | LOC | Java Target | Status | Notes |
 |---------------|-----|-------------|--------|-------|
-| COSGN00C.cbl | 260 | AuthController + AuthService | Pending | JWT-based auth |
-| COMEN01C.cbl | 308 | MenuController | Pending | Regular user menu |
-| COADM01C.cbl | 288 | MenuController | Pending | Admin menu |
-| COUSR00C.cbl | 695 | UserController (GET list) | Pending | Paginated user list |
-| COUSR01C.cbl | 299 | UserController (POST) | Pending | Create user |
-| COUSR02C.cbl | 414 | UserController (PUT) | Pending | Update user |
-| COUSR03C.cbl | 359 | UserController (DELETE) | Pending | Delete user |
+| COSGN00C.cbl | 260 | AuthController + AuthService | **Done** | JWT-based auth |
+| COMEN01C.cbl | 308 | MenuController | **Done** | Regular user menu |
+| COADM01C.cbl | 288 | MenuController | **Done** | Admin menu |
+| COUSR00C.cbl | 695 | UserController (GET list) | **Done** | Paginated user list |
+| COUSR01C.cbl | 299 | UserController (POST) | **Done** | Create user |
+| COUSR02C.cbl | 414 | UserController (PUT) | **Done** | Update user |
+| COUSR03C.cbl | 359 | UserController (DELETE) | **Done** | Delete user |
 
 ### Phase 2 — Reference Data & Read-Only Screens
 
@@ -142,3 +142,4 @@
 |------|-------|--------|---------|
 | 2026-05-26 | Setup | Project skeleton created | Maven multi-module structure at carddemo-java/ |
 | 2026-05-26 | Phase 0 | **Completed** | 65 files, 4,137 LOC, 82 tests pass. 11 entities, 6 VOs, 11 repos, 12 Flyway migrations, 3 utils, 1 DTO |
+| 2026-05-26 | Phase 1 | **Completed** | JWT auth, menu routing, user CRUD. 117 tests pass (35 new service+web tests) |
