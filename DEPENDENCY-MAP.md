@@ -117,33 +117,60 @@ Authorization Domain (IMS-DB2-MQ sub-app):
 
 ### Complete Online Navigation Diagram
 
-```
-                          ┌─────────────┐
-                          │  COSGN00C   │
-                          │  (Sign-On)  │
-                          └──────┬──────┘
-                    Admin ┌──────┴──────┐ Regular
-                          ▼              ▼
-                   ┌────────────┐  ┌────────────┐
-                   │ COADM01C   │  │ COMEN01C   │
-                   │(Admin Menu)│  │(Main Menu) │
-                   └─────┬──────┘  └─────┬──────┘
-          ┌──────┬───────┼───────┐       │
-          ▼      ▼       ▼       ▼       │
-      COUSR00C COUSR01C COTRTLIC      ┌──┴──┬──────┬──────┬──────┐
-      COUSR02C COUSR03C COTRTUPC      ▼     ▼      ▼      ▼      ▼
-       (User CRUD)    (TxType)     COACTVWC COACTUPC COCRDLIC COTRN00C ...
-                                      │       │       │  ▲      │
-                                      │       │       ▼  │      ▼
-                                      │       │   COCRDSLC  COTRN01C
-                                      │       │   COCRDUPC  COTRN02C
-                                      │       │             CORPT00C
-                                      │       │             COBIL00C
-                                      └───────┴─────────── COPAUS0C
-                                                            │
-                                                        COPAUS1C
-                                                            │ LINK
-                                                        COPAUS2C
+```mermaid
+flowchart TD
+    COSGN00C["COSGN00C\n(Sign-On)"]
+
+    COSGN00C -->|Admin| COADM01C["COADM01C\n(Admin Menu)"]
+    COSGN00C -->|Regular| COMEN01C["COMEN01C\n(Main Menu)"]
+
+    %% Admin menu targets
+    COADM01C -->|1| COUSR00C["COUSR00C\n(User List)"]
+    COADM01C -->|2| COUSR01C["COUSR01C\n(User Add)"]
+    COADM01C -->|3| COUSR02C["COUSR02C\n(User Update)"]
+    COADM01C -->|4| COUSR03C["COUSR03C\n(User Delete)"]
+    COADM01C -->|5| COTRTLIC["COTRTLIC\n(TxType List · DB2)"]
+    COADM01C -->|6| COTRTUPC["COTRTUPC\n(TxType Maint · DB2)"]
+    COTRTLIC --> COTRTUPC
+
+    %% Main menu targets
+    COMEN01C -->|1| COACTVWC["COACTVWC\n(Acct View)"]
+    COMEN01C -->|2| COACTUPC["COACTUPC\n(Acct Update)"]
+    COMEN01C -->|3| COCRDLIC["COCRDLIC\n(Card List)"]
+    COMEN01C -->|4| COCRDSLC["COCRDSLC\n(Card Detail)"]
+    COMEN01C -->|5| COCRDUPC["COCRDUPC\n(Card Update)"]
+    COMEN01C -->|6| COTRN00C["COTRN00C\n(Txn List)"]
+    COMEN01C -->|7| COTRN01C["COTRN01C\n(Txn View)"]
+    COMEN01C -->|8| COTRN02C["COTRN02C\n(Txn Add)"]
+    COMEN01C -->|9| CORPT00C["CORPT00C\n(Reports)"]
+    COMEN01C -->|10| COBIL00C["COBIL00C\n(Bill Pay)"]
+    COMEN01C -->|11| COPAUS0C["COPAUS0C\n(Auth Summary)"]
+
+    %% Sub-screen navigation
+    COCRDLIC -->|View| COCRDSLC
+    COCRDLIC -->|Update| COCRDUPC
+    COPAUS0C --> COPAUS1C["COPAUS1C\n(Auth Detail)"]
+    COPAUS1C -.->|LINK| COPAUS2C["COPAUS2C\n(Fraud Check)"]
+
+    %% PF3 return paths
+    COUSR00C -.->|PF3| COADM01C
+    COUSR01C -.->|PF3| COADM01C
+    COUSR02C -.->|PF3| COADM01C
+    COUSR03C -.->|PF3| COADM01C
+    COTRTLIC -.->|PF3| COADM01C
+    COACTVWC -.->|PF3| COMEN01C
+    COACTUPC -.->|PF3| COMEN01C
+    COCRDLIC -.->|PF3| COMEN01C
+    COTRN00C -.->|PF3| COMEN01C
+    CORPT00C -.->|PF3| COMEN01C
+    COBIL00C -.->|PF3| COMEN01C
+    COMEN01C -.->|PF3| COSGN00C
+    COADM01C -.->|PF3| COSGN00C
+
+    style COSGN00C fill:#f9d71c,stroke:#333,color:#000
+    style COMEN01C fill:#4fc3f7,stroke:#333,color:#000
+    style COADM01C fill:#ff8a65,stroke:#333,color:#000
+    style COPAUS2C fill:#ef5350,stroke:#fff,color:#fff
 ```
 
 ---
@@ -220,27 +247,21 @@ CBCUS01C, CBEXPORT, CBIMPORT
 
 The core batch cycle that posts daily transactions:
 
-```
-                    ┌──────────────┐
-                    │  DALYTRAN.PS │  (Daily transaction file — sequential)
-                    └──────┬───────┘
-                           │ INPUT
-                           ▼
-              ┌─────────────────────────┐
-              │   CBTRN02C (POSTTRAN)   │
-              │   Daily Transaction     │
-              │   Posting               │
-              └──┬──┬──┬──┬──┬──┬──────┘
-                 │  │  │  │  │  │
-    ┌────────────┘  │  │  │  │  └────────────┐
-    ▼               ▼  │  ▼  ▼               ▼
- TRANSACT       XREFFILE │ ACCTFILE     TCATBALF
- .VSAM.KSDS    .VSAM.KSDS│ .VSAM.KSDS  .VSAM.KSDS
- (Read/Write)  (Read)    │  (Read/Write) (Read/Write)
-                          │
-                          ▼
-                     DALYREJS
-                     (Write — rejected transactions)
+```mermaid
+flowchart LR
+    DALYTRAN["DALYTRAN.PS\n(Daily Txns)"]
+    CBTRN02C["CBTRN02C\n(POSTTRAN)"]
+
+    DALYTRAN -->|INPUT| CBTRN02C
+    XREFFILE[("XREFFILE\n(Card→Acct Xref)")] -->|Read| CBTRN02C
+    TRANSACT[("TRANSACT\n(Txn File)")] <-->|Read/Write| CBTRN02C
+    ACCTFILE[("ACCTFILE\n(Accounts)")] <-->|Read/Write| CBTRN02C
+    TCATBALF[("TCATBALF\n(Cat Balances)")] <-->|Read/Write| CBTRN02C
+    CBTRN02C -->|Write| DALYREJS["DALYREJS\n(Rejects)"]
+
+    style CBTRN02C fill:#ef5350,stroke:#fff,color:#fff
+    style DALYTRAN fill:#a5d6a7,stroke:#333,color:#000
+    style DALYREJS fill:#ffcc80,stroke:#333,color:#000
 ```
 
 **Input**: `DALYTRAN.PS` — daily transaction flat file
@@ -259,58 +280,82 @@ CBTRN01C
 
 ### Interest Calculation (INTCALC)
 
-```
-              ┌────────────────────────────┐
-              │   CBACT04C (INTCALC)       │
-              │   Interest Calculation     │
-              └──┬──┬──┬──┬──┬────────────┘
-                 │  │  │  │  │
-    ┌────────────┘  │  │  │  └────────────┐
-    ▼               ▼  ▼  ▼               ▼
- ACCTFILE       XREFFILE  DISCGRP      TCATBALF
- .VSAM.KSDS   .VSAM.KSDS .VSAM.KSDS  .VSAM.KSDS
- (Read/Write)  (Read)    (Read)       (Read/Write)
-                    │
-                    ▼
-               TRANSACT (SYSTRAN)
-               (Write — interest transactions)
+```mermaid
+flowchart LR
+    CBACT04C["CBACT04C\n(INTCALC)"]
+
+    ACCTFILE[("ACCTFILE\n(Accounts)")] <-->|Read/Write| CBACT04C
+    XREFFILE[("XREFFILE\n(Card→Acct)")] -->|Read| CBACT04C
+    DISCGRP[("DISCGRP\n(Discount Groups)")] -->|Read| CBACT04C
+    TCATBALF[("TCATBALF\n(Cat Balances)")] <-->|Read/Write| CBACT04C
+    CBACT04C -->|Write| SYSTRAN["SYSTRAN\n(Interest Txns)"]
+
+    style CBACT04C fill:#ef5350,stroke:#fff,color:#fff
+    style SYSTRAN fill:#ffcc80,stroke:#333,color:#000
 ```
 
 ### Daily Transaction Report (TRANREPT)
 
-```
-TRANREPT JCL:
-  Step 1: SORT — sort TRANSACT.BKUP by date → TRANSACT.DALY
-  Step 2: CBTRN03C
-            Reads:  TRANSACT.DALY, CARDXREF, TRANTYPE, TRANCATG, DATEPARM
-            Writes: TRANREPT (report output — GDG)
+```mermaid
+flowchart LR
+    SORT1["SORT\n(Step 1)"] -->|sort by date| DALY["TRANSACT.DALY"]
+    BKUP["TRANSACT.BKUP"] --> SORT1
+    DALY --> CBTRN03C["CBTRN03C\n(Daily Report)"]
+    CARDXREF[("CARDXREF")] -->|Read| CBTRN03C
+    TRANTYPE[("TRANTYPE")] -->|Read| CBTRN03C
+    TRANCATG[("TRANCATG")] -->|Read| CBTRN03C
+    DATEPARM["DATEPARM"] -->|Read| CBTRN03C
+    CBTRN03C -->|Write| TRANREPT["TRANREPT\n(GDG Report)"]
+
+    style CBTRN03C fill:#42a5f5,stroke:#fff,color:#fff
+    style TRANREPT fill:#ffcc80,stroke:#333,color:#000
 ```
 
 ### Statement Generation (CREASTMT)
 
-```
-CREASTMT JCL:
-  Step 1: SORT — sort TRANSACT.VSAM.KSDS → TRXFL.SEQ
-  Step 2: IDCAMS — REPRO TRXFL.SEQ → TRXFL.VSAM.KSDS
-  Step 3: IEFBR14 — delete old STATEMNT files
-  Step 4: CBSTM03A
-            Reads:  TRXFL.VSAM.KSDS, XREFFILE, ACCTFILE, CUSTFILE
-            Writes: STATEMNT.PS (text), STATEMNT.HTML (web)
+```mermaid
+flowchart LR
+    TRANSACT[("TRANSACT.VSAM")] --> SORT2["SORT\n(Step 1)"]
+    SORT2 --> TRXSEQ["TRXFL.SEQ"]
+    TRXSEQ -->|IDCAMS REPRO| TRXFL[("TRXFL.VSAM")]
+    TRXFL --> CBSTM03A["CBSTM03A\n(Statement Gen)"]
+    XREFFILE2[("XREFFILE")] -->|Read| CBSTM03A
+    ACCTFILE2[("ACCTFILE")] -->|Read| CBSTM03A
+    CUSTFILE2[("CUSTFILE")] -->|Read| CBSTM03A
+    CBSTM03A -->|Write| STMTPS["STATEMNT.PS\n(Text)"]
+    CBSTM03A -->|Write| STMTHTML["STATEMNT.HTML\n(Web)"]
+
+    style CBSTM03A fill:#42a5f5,stroke:#fff,color:#fff
+    style STMTPS fill:#ffcc80,stroke:#333,color:#000
+    style STMTHTML fill:#ffcc80,stroke:#333,color:#000
 ```
 
 ### Data Export / Import
 
-```
-CBEXPORT JCL:
-  CBEXPORT
-    Reads:  CUSTFILE, ACCTFILE, XREFFILE, TRANSACT, CARDFILE (all VSAM)
-    Writes: EXPORT.DATA (single combined flat file)
+```mermaid
+flowchart LR
+    subgraph Export
+        CUSTV[("CUSTFILE")] --> CBEXPORT["CBEXPORT"]
+        ACCTV[("ACCTFILE")] --> CBEXPORT
+        XREFV[("XREFFILE")] --> CBEXPORT
+        TRANV[("TRANSACT")] --> CBEXPORT
+        CARDV[("CARDFILE")] --> CBEXPORT
+        CBEXPORT --> EXPDATA["EXPORT.DATA"]
+    end
 
-CBIMPORT JCL:
-  CBIMPORT
-    Reads:  EXPORT.DATA
-    Writes: CUSTOUT, ACCTOUT, XREFOUT, TRNXOUT, CARDOUT (flat files)
-            ERROUT (import errors)
+    subgraph Import
+        EXPDATA2["EXPORT.DATA"] --> CBIMPORT["CBIMPORT"]
+        CBIMPORT --> CUSTOUT["CUSTOUT"]
+        CBIMPORT --> ACCTOUT["ACCTOUT"]
+        CBIMPORT --> XREFOUT["XREFOUT"]
+        CBIMPORT --> TRNXOUT["TRNXOUT"]
+        CBIMPORT --> CARDOUT["CARDOUT"]
+        CBIMPORT --> ERROUT["ERROUT\n(Errors)"]
+    end
+
+    style CBEXPORT fill:#66bb6a,stroke:#fff,color:#fff
+    style CBIMPORT fill:#ab47bc,stroke:#fff,color:#fff
+    style ERROUT fill:#ef5350,stroke:#fff,color:#fff
 ```
 
 ### Account/Card/Xref/Customer Read Jobs
@@ -326,18 +371,26 @@ Simple dump programs for verification:
 
 ### Transaction Backup (TRANBKP)
 
-```
-TRANBKP JCL:
-  Proc: REPRO TRANSACT.VSAM.KSDS → TRANSACT.BKUP(+1)  (GDG)
-  Step 1: IDCAMS DELETE/DEFINE — reinit TRANSACT.VSAM.KSDS
+```mermaid
+flowchart LR
+    TRANVSAM[("TRANSACT.VSAM")] -->|REPRO| TRANBKUP["TRANSACT.BKUP\n(GDG +1)"]
+    TRANBKUP -.->|IDCAMS reinit| TRANVSAM
+
+    style TRANVSAM fill:#4fc3f7,stroke:#333,color:#000
+    style TRANBKUP fill:#ffcc80,stroke:#333,color:#000
 ```
 
 ### Combined Transaction Sort (COMBTRAN)
 
-```
-COMBTRAN JCL:
-  Step 1: SORT — merge TRANSACT.BKUP(0) + SYSTRAN(0) → TRANSACT.COMBINED
-  Step 2: IDCAMS — REPRO TRANSACT.COMBINED → TRANSACT.VSAM.KSDS
+```mermaid
+flowchart LR
+    BKUP2["TRANSACT.BKUP(0)"] --> SORT3["SORT\n(Merge)"]
+    SYSTRAN2["SYSTRAN(0)"] --> SORT3
+    SORT3 --> COMBINED["TRANSACT.COMBINED"]
+    COMBINED -->|IDCAMS REPRO| TRANVSAM2[("TRANSACT.VSAM")]
+
+    style SORT3 fill:#78909c,stroke:#fff,color:#fff
+    style TRANVSAM2 fill:#4fc3f7,stroke:#333,color:#000
 ```
 
 ---
@@ -402,6 +455,82 @@ COMBTRAN JCL:
 Which programs read from and write to each dataset.  "Online" = CICS
 `EXEC CICS READ/WRITE/REWRITE/DELETE/STARTBR/READNEXT`.
 "Batch" = standard COBOL file I/O (`OPEN/READ/WRITE/REWRITE/CLOSE`).
+
+### VSAM Read/Write Overview
+
+```mermaid
+flowchart TD
+    subgraph Online["Online (CICS) Programs"]
+        COACTVWC["COACTVWC\n(Acct View)"]
+        COACTUPC["COACTUPC\n(Acct Update)"]
+        COCRDLIC["COCRDLIC\n(Card List)"]
+        COCRDSLC["COCRDSLC\n(Card Detail)"]
+        COCRDUPC["COCRDUPC\n(Card Update)"]
+        COSGN00C["COSGN00C\n(Sign-On)"]
+        COUSR00C["COUSR00C\n(User List)"]
+        COUSR01C["COUSR01C\n(User Add)"]
+        COUSR02C["COUSR02C\n(User Update)"]
+        COUSR03C["COUSR03C\n(User Delete)"]
+    end
+
+    subgraph Batch["Batch Programs"]
+        CBTRN02C["CBTRN02C\n(Post Txns)"]
+        CBACT04C["CBACT04C\n(Interest)"]
+        CBTRN01C["CBTRN01C\n(Validate)"]
+        CBTRN03C["CBTRN03C\n(Report)"]
+        CBEXPORT["CBEXPORT"]
+        CBSTM03A["CBSTM03A\n(Statements)"]
+    end
+
+    subgraph VSAM["Core VSAM Datasets"]
+        ACCTDATA[("ACCTDATA\n(Accounts)")]
+        CARDDATA[("CARDDATA\n(Cards)")]
+        CARDXREF[("CARDXREF\n(Xref)")]
+        CUSTDATA[("CUSTDATA\n(Customers)")]
+        TRANSACT[("TRANSACT\n(Transactions)")]
+        USRSEC[("USRSEC\n(Security)")]
+    end
+
+    %% Online reads
+    ACCTDATA -->|R| COACTVWC
+    ACCTDATA <-->|R/W| COACTUPC
+    CARDDATA -->|R| COACTVWC
+    CARDDATA -->|R| COCRDSLC
+    CARDDATA <-->|R/W| COCRDUPC
+    CARDDATA -->|Browse| COCRDLIC
+    CUSTDATA -->|R| COACTVWC
+    CUSTDATA <-->|R/W| COACTUPC
+    CUSTDATA -->|R| COCRDSLC
+    CUSTDATA -->|R| COCRDUPC
+    USRSEC -->|R| COSGN00C
+    USRSEC -->|Browse| COUSR00C
+    USRSEC <-->|W| COUSR01C
+    USRSEC <-->|R/W| COUSR02C
+    USRSEC <-->|Del| COUSR03C
+
+    %% Batch reads/writes
+    ACCTDATA <-->|R/W| CBTRN02C
+    ACCTDATA <-->|R/W| CBACT04C
+    ACCTDATA -->|R| CBEXPORT
+    ACCTDATA -->|R| CBSTM03A
+    CARDXREF -->|R| CBTRN01C
+    CARDXREF -->|R| CBTRN02C
+    CARDXREF -->|R| CBTRN03C
+    CARDXREF -->|R| CBACT04C
+    CARDXREF -->|R| CBEXPORT
+    CARDXREF -->|R| CBSTM03A
+    TRANSACT <-->|R/W| CBTRN02C
+    TRANSACT -->|R| CBEXPORT
+
+    style ACCTDATA fill:#fff9c4,stroke:#f9a825,color:#000
+    style CARDDATA fill:#fff9c4,stroke:#f9a825,color:#000
+    style CARDXREF fill:#fff9c4,stroke:#f9a825,color:#000
+    style CUSTDATA fill:#fff9c4,stroke:#f9a825,color:#000
+    style TRANSACT fill:#fff9c4,stroke:#f9a825,color:#000
+    style USRSEC fill:#fff9c4,stroke:#f9a825,color:#000
+    style CBTRN02C fill:#ef5350,stroke:#fff,color:#fff
+    style CBACT04C fill:#ef5350,stroke:#fff,color:#fff
+```
 
 ### Core Entity Datasets
 
@@ -673,18 +802,44 @@ Which programs include which copybooks.  Organized by copybook function.
 
 ## 8. External System Interfaces
 
+```mermaid
+flowchart LR
+    subgraph MQ["IBM MQ"]
+        REQQ[("Request\\nQueue")]
+        REPQ[("Reply\\nQueue")]
+    end
+
+    subgraph IMS["IMS / DLI"]
+        IMSDB[("IMS\\nDatabase")]
+    end
+
+    subgraph DB2["DB2"]
+        TRTYPE[("TR_TYPE\\nTable")]
+        AUTHDB[("Auth/Fraud\\nTables")]
+    end
+
+    COPAUA0C["COPAUA0C\\n(Auth Processor)"] <-->|MQGET / MQPUT1| REQQ
+    COPAUA0C <--> REPQ
+
+    PAUDBLOD["PAUDBLOD\\n(IMS Load)"] -->|ISRT, GU| IMSDB
+    PAUDBUNL["PAUDBUNL\\n(IMS Unload)"] -->|GN, GNP| IMSDB
+    DBUNLDGS["DBUNLDGS\\n(IMS Restructure)"] <-->|GN, GNP, ISRT| IMSDB
+
+    COTRTLIC["COTRTLIC\\n(TxType List)"] <-->|SQL CRUD| TRTYPE
+    COTRTUPC["COTRTUPC\\n(TxType Maint)"] <-->|SQL| TRTYPE
+    COBTUPDT["COBTUPDT\\n(Batch Update)"] <-->|SQL| TRTYPE
+    COPAUS2C["COPAUS2C\\n(Fraud Check)"] -->|SQL SELECT| AUTHDB
+
+    style COPAUA0C fill:#42a5f5,stroke:#fff,color:#fff
+    style COPAUS2C fill:#ef5350,stroke:#fff,color:#fff
+    style PAUDBLOD fill:#66bb6a,stroke:#fff,color:#fff
+    style PAUDBUNL fill:#66bb6a,stroke:#fff,color:#fff
+    style DBUNLDGS fill:#66bb6a,stroke:#fff,color:#fff
+```
+
 ### MQ (Message Queuing)
 
-Only `COPAUA0C` (Authorization Processor) uses MQ APIs:
-
-```
-COPAUA0C
-  ├─ MQOPEN  — open request queue
-  ├─ MQGET   — read authorization request message
-  ├─ MQPUT1  — send authorization reply message
-  └─ MQCLOSE — close request queue
-```
-
+Only `COPAUA0C` (Authorization Processor) uses MQ APIs.
 This program bridges the CICS online application to the authorization
 back-end.  It reads requests from a queue, processes them (including
 CICS file I/O for account/card/customer lookup), and writes replies.
@@ -723,6 +878,38 @@ All three call `CBLTDLI` and reference IMS PCBs via copybooks
 ## 9. Impact Analysis Quick-Reference
 
 Use this section when assessing the blast radius of a change.
+
+### Copybook Blast Radius
+
+```mermaid
+flowchart TD
+    COCOM01Y["COCOM01Y\n(COMMAREA)\n21 programs"]
+    CVACT01Y["CVACT01Y\n(Account Rec)\n15 programs"]
+    CVACT03Y["CVACT03Y\n(Card Xref)\n15 programs"]
+    CVTRA05Y["CVTRA05Y\n(Transaction)\n11 programs"]
+    CVACT02Y["CVACT02Y\n(Card Index)\n10 programs"]
+    CVCUS01Y["CVCUS01Y\n(Customer)\n9 programs"]
+    CIPAUDTY["CIPAUDTY\n(Auth Detail)\n8 programs"]
+    CVCRD01Y["CVCRD01Y\n(Card Detail)\n7 programs"]
+
+    COCOM01Y ---|breaks| ALL_ONLINE["All 21 Online Programs"]
+    CVACT01Y ---|breaks| ACCT_PROGS["Acct-touching\nonline + batch"]
+    CVACT03Y ---|breaks| XREF_PROGS["Xref-touching\nonline + batch"]
+    CVTRA05Y ---|breaks| TXN_PROGS["Transaction\nprograms"]
+    CVACT02Y ---|breaks| CARD_IDX["Card index\nprograms"]
+    CVCUS01Y ---|breaks| CUST_PROGS["Customer\nprograms"]
+    CIPAUDTY ---|breaks| AUTH_PROGS["Auth sub-app\nprograms"]
+    CVCRD01Y ---|breaks| CARD_DTL["Card detail\nprograms"]
+
+    style COCOM01Y fill:#ef5350,stroke:#fff,color:#fff
+    style CVACT01Y fill:#ff7043,stroke:#fff,color:#fff
+    style CVACT03Y fill:#ff7043,stroke:#fff,color:#fff
+    style CVTRA05Y fill:#ffa726,stroke:#333,color:#000
+    style CVACT02Y fill:#ffcc80,stroke:#333,color:#000
+    style CVCUS01Y fill:#ffcc80,stroke:#333,color:#000
+    style CIPAUDTY fill:#ffcc80,stroke:#333,color:#000
+    style CVCRD01Y fill:#ffe0b2,stroke:#333,color:#000
+```
 
 ### If You Change a Copybook...
 
