@@ -368,6 +368,98 @@ The following features are planned for upcoming releases:
    - Web Service connectivity
    - Exposure of transactions for distributed application integration
 
+## Java Application (COBOL-to-Java Migration)
+
+The `carddemo-java/` directory contains the modernized Java implementation of the CardDemo application, built as a Spring Boot multi-module project.
+
+### Architecture
+
+| Module | Description |
+|--------|-------------|
+| `carddemo-common` | Shared DTOs, utilities (DateUtil, MoneyUtil, LookupService) |
+| `carddemo-domain` | JPA entities, Spring Data repositories, Flyway migrations |
+| `carddemo-service` | Business services (account, card, transaction management) |
+| `carddemo-web` | REST API controllers, security (JWT), exception handling |
+| `carddemo-batch` | Spring Batch jobs (transaction posting, interest calc, statements) |
+| `carddemo-migration` | Data migration ETL tools (VSAM-to-PostgreSQL, export/import) |
+
+### Prerequisites
+
+- Java 17+
+- Maven 3.6+
+- PostgreSQL 15+ (or Docker for Testcontainers)
+
+### Build
+
+```bash
+cd carddemo-java
+mvn clean install
+```
+
+### Run
+
+```bash
+# Start the web application
+cd carddemo-java/carddemo-web
+mvn spring-boot:run
+
+# Start batch jobs
+cd carddemo-java/carddemo-batch
+mvn spring-boot:run
+```
+
+### Database Migrations (Flyway)
+
+Schema migrations are in `carddemo-domain/src/main/resources/db/migration/`. Flyway runs automatically on application startup. Migrations include:
+
+- V001–V011: Core schema (users, accounts, customers, cards, transactions, etc.)
+- V012: Seed data from COBOL ASCII data files
+- V013–V014: Card versioning and authorization tables
+
+### Data Migration Tools
+
+The `carddemo-migration` module provides ETL tools for migrating data from COBOL VSAM files to PostgreSQL:
+
+- **VsamToPostgresqlMigrator**: Reads fixed-width ASCII data files (`app/data/ASCII/`), parses fields using COBOL PIC clause layouts, and inserts into PostgreSQL via JPA repositories. Supports all 9 data files (accounts, customers, cards, card xrefs, daily transactions, disclosure groups, category balances, transaction types, transaction categories).
+
+- **DataExportService**: Replaces CBEXPORT. Exports all entity data to JSON format (one file per entity type).
+
+- **DataImportService**: Replaces CBIMPORT. Imports data from JSON export files with referential integrity validation (card xref → account/customer, transaction → card).
+
+- **MigrationValidationService**: Automated post-migration validation — row counts vs source files, monetary totals (account balances, transaction amounts), and referential integrity checks (zero orphan records).
+
+### Batch Jobs
+
+| Job | Replaces | Description |
+|-----|----------|-------------|
+| DailyTransactionPostingJob | CBTRN02C (POSTTRAN JCL) | Posts daily transactions to accounts |
+| InterestCalculationJob | CBACT04C | Calculates interest per account |
+| DailyTransactionReportJob | CBTRN03C | Generates daily transaction reports |
+| StatementGenerationJob | CBSTM03A/B | Generates customer statements |
+| TransactionInitJob | CBTRN01C | Initializes transaction files |
+| AuthorizationPurgeJob | — | Purges expired authorizations |
+
+### API Documentation
+
+The REST API exposes endpoints for:
+
+- **Authentication**: `/api/auth/login` — JWT-based login (replaces COSGN00C)
+- **Accounts**: `/api/accounts` — View, update account details (replaces COACTVWC, COACTUPC)
+- **Cards**: `/api/cards` — List, view, update cards (replaces COCRDLIC, COCRDSLC, COCRDUPC)
+- **Transactions**: `/api/transactions` — View, create transactions (replaces COTRN00C–02C)
+- **Users**: `/api/users` — Admin user management (replaces COUSR00C–03C)
+
+### Running Tests
+
+```bash
+# All tests (requires Docker for Testcontainers)
+cd carddemo-java
+mvn test
+
+# Migration module only
+mvn test -pl carddemo-migration -am
+```
+
 ## Contributing
 
 We welcome contributions and enhancements to this codebase from the mainframe community. To contribute:
