@@ -4,11 +4,10 @@ import com.carddemo.domain.entity.Account;
 import com.carddemo.domain.entity.Card;
 import com.carddemo.service.CardService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -20,11 +19,41 @@ public class CardController {
 
     private final CardService cardService;
 
+    @GetMapping
+    public ResponseEntity<Page<CardResponse>> listCards(
+            @RequestParam("accountId") Long accountId,
+            Pageable pageable) {
+        Page<CardResponse> page = cardService.listCardsByAccount(accountId, pageable)
+                .map(CardResponse::fromCard);
+        return ResponseEntity.ok(page);
+    }
+
     @GetMapping("/{cardNumber}")
     public ResponseEntity<CardResponse> getCard(@PathVariable("cardNumber") String cardNumber) {
         CardService.CardDetail detail = cardService.getCardDetail(cardNumber);
         return ResponseEntity.ok(CardResponse.from(detail));
     }
+
+    @PutMapping("/{cardNumber}")
+    public ResponseEntity<CardResponse> updateCard(
+            @PathVariable("cardNumber") String cardNumber,
+            @RequestBody CardUpdateRequest request) {
+        CardService.CardUpdateRequest serviceRequest = new CardService.CardUpdateRequest(
+                request.activeStatus(),
+                request.expirationDate(),
+                request.embossedName(),
+                request.version()
+        );
+        Card updated = cardService.updateCard(cardNumber, serviceRequest);
+        return ResponseEntity.ok(CardResponse.fromCard(updated));
+    }
+
+    public record CardUpdateRequest(
+            String activeStatus,
+            LocalDate expirationDate,
+            String embossedName,
+            Long version
+    ) {}
 
     public record CardResponse(
             String cardNum,
@@ -33,6 +62,7 @@ public class CardController {
             String embossedName,
             LocalDate expirationDate,
             String activeStatus,
+            Long version,
             AccountSummary account
     ) {
         static CardResponse from(CardService.CardDetail detail) {
@@ -41,7 +71,16 @@ public class CardController {
                     ? AccountSummary.from(detail.account()) : null;
             return new CardResponse(
                     c.getCardNum(), c.getAcctId(), c.getCvvCd(),
-                    c.getEmbossedName(), c.getExpirationDate(), c.getActiveStatus(), as
+                    c.getEmbossedName(), c.getExpirationDate(), c.getActiveStatus(),
+                    c.getVersion(), as
+            );
+        }
+
+        static CardResponse fromCard(Card c) {
+            return new CardResponse(
+                    c.getCardNum(), c.getAcctId(), c.getCvvCd(),
+                    c.getEmbossedName(), c.getExpirationDate(), c.getActiveStatus(),
+                    c.getVersion(), null
             );
         }
     }

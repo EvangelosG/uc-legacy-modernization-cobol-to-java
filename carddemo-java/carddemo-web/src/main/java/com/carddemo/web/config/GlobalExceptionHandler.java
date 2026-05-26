@@ -1,10 +1,12 @@
 package com.carddemo.web.config;
 
 import com.carddemo.service.AuthService;
+import com.carddemo.service.CardService;
 import com.carddemo.service.TransactionTypeService;
 import com.carddemo.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -44,6 +46,20 @@ public class GlobalExceptionHandler {
             TransactionTypeService.DuplicateResourceException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(Map.of("error", ex.getMessage()));
+    }
+
+    @ExceptionHandler(CardService.OptimisticLockConflictException.class)
+    public ResponseEntity<Map<String, String>> handleOptimisticLockConflict(
+            CardService.OptimisticLockConflictException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("error", ex.getMessage()));
+    }
+
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ResponseEntity<Map<String, String>> handleJpaOptimisticLock(
+            ObjectOptimisticLockingFailureException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("error", "Resource has been modified by another user"));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

@@ -3,11 +3,9 @@ package com.carddemo.web.controller;
 import com.carddemo.domain.entity.TransactionCategoryBalance;
 import com.carddemo.service.BillingService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -24,6 +22,36 @@ public class BillingController {
             @PathVariable("accountId") Long accountId) {
         BillingService.BillingSummary summary = billingService.getBillingSummary(accountId);
         return ResponseEntity.ok(BillingSummaryResponse.from(summary));
+    }
+
+    @PostMapping("/payments")
+    public ResponseEntity<PaymentResponse> processPayment(
+            @RequestBody PaymentRequest request) {
+        BillingService.PaymentRequest serviceRequest = new BillingService.PaymentRequest(
+                request.accountId(),
+                request.paymentAmount()
+        );
+        BillingService.PaymentResult result = billingService.processPayment(serviceRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(PaymentResponse.from(result));
+    }
+
+    public record PaymentRequest(
+            Long accountId,
+            BigDecimal paymentAmount
+    ) {}
+
+    public record PaymentResponse(
+            Long accountId,
+            BigDecimal paymentAmount,
+            BigDecimal newBalance,
+            BigDecimal newCycleCredits
+    ) {
+        static PaymentResponse from(BillingService.PaymentResult r) {
+            return new PaymentResponse(
+                    r.accountId(), r.paymentAmount(),
+                    r.newBalance(), r.newCycleCredits()
+            );
+        }
     }
 
     public record BillingSummaryResponse(
