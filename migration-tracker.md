@@ -7,14 +7,14 @@
 | Total COBOL Programs | 43 |
 | Total LOC (COBOL) | ~28,000 |
 | Migration Start Date | 2026-05-26 |
-| Current Phase | Phase 0 — Not Started |
+| Current Phase | Phase 1 — Pending |
 | Overall Status | **In Progress** |
 
 ## Phase Summary
 
 | Phase | Name | Status | Child Session | Programs | Validation |
 |-------|------|--------|---------------|----------|------------|
-| 0 | Infrastructure & Foundation | Pending | — | Copybooks → DTOs, CSUTLDTC, COBSWAIT | `mvn compile` + `mvn test` |
+| 0 | Infrastructure & Foundation | **Done** | [d2db011](https://outpostai.devinenterprise.com/sessions/d2db011778f4423388673422e0876ede) | Copybooks → DTOs, CSUTLDTC, COBSWAIT | `mvn compile` + `mvn test` — 82 tests pass |
 | 1 | Identity, Menus & User Admin | Pending | — | COSGN00C, COMEN01C, COADM01C, COUSR00C–03C | Auth flow + CRUD tests |
 | 2 | Reference Data & Read-Only Screens | Pending | — | COTRTLIC, COTRTUPC, COACTVWC, COCRDSLC, COTRN00C/01C, CORPT00C, COBIL00C (read), COPAUS0C/1C | Read endpoint tests |
 | 3 | Data Entry Screens | Pending | — | COCRDLIC, COCRDUPC, COTRN02C (online), COBIL00C (write) | Optimistic locking + write tests |
@@ -28,24 +28,24 @@
 
 | COBOL Artifact | Java Target | Status | Notes |
 |----------------|-------------|--------|-------|
-| CVACT01Y.cpy | Account.java (entity) | Pending | 300 bytes, account record |
-| CVACT02Y.cpy | Card.java (entity) | Pending | 150 bytes, card record |
-| CVACT03Y.cpy | CardCrossReference.java (entity) | Pending | 50 bytes, card xref |
-| CVCUS01Y.cpy | Customer.java (entity) | Pending | 500 bytes, customer record |
-| CVTRA05Y.cpy | Transaction.java (entity) | Pending | 350 bytes, transaction record |
-| CVTRA06Y.cpy | DailyTransaction.java (entity) | Pending | 350 bytes, daily transaction |
-| CVTRA01Y.cpy | TransactionCategoryBalance.java (entity) | Pending | 50 bytes, composite key |
-| CVTRA02Y.cpy | DisclosureGroup.java (entity) | Pending | 50 bytes, composite key |
-| CVTRA03Y.cpy | TransactionType.java (entity) | Pending | 60 bytes, tx type |
-| CVTRA04Y.cpy | TransactionCategory.java (entity) | Pending | 60 bytes, tx category |
-| CSUSR01Y.cpy | UserSecurity.java (entity) | Pending | 80 bytes, user security |
-| COCOM01Y.cpy | CardDemoSession.java (DTO) | Pending | COMMAREA layout |
-| CSUTLDTC.cbl | DateUtil.java | Pending | 157 LOC, date utility |
-| COBSWAIT.cbl | — (eliminated) | Pending | 41 LOC, wait utility |
-| CSLKPCDY.cpy | LookupService.java | Pending | 1,318-line area code table |
-| CODATECN.cpy | DateUtil.java | Pending | Date conversion |
-| Flyway V001–V012 | SQL migrations | Pending | Database schema + seed data |
-| Value objects | Money, CardNumber, typed IDs | Pending | Domain value objects |
+| CVACT01Y.cpy | Account.java (entity) | **Done** | 300 bytes, account record |
+| CVACT02Y.cpy | Card.java (entity) | **Done** | 150 bytes, card record |
+| CVACT03Y.cpy | CardCrossReference.java (entity) | **Done** | 50 bytes, card xref |
+| CVCUS01Y.cpy | Customer.java (entity) | **Done** | 500 bytes, customer record |
+| CVTRA05Y.cpy | Transaction.java (entity) | **Done** | 350 bytes, transaction record |
+| CVTRA06Y.cpy | DailyTransaction.java (entity) | **Done** | 350 bytes, daily transaction |
+| CVTRA01Y.cpy | TransactionCategoryBalance.java (entity) | **Done** | 50 bytes, composite key |
+| CVTRA02Y.cpy | DisclosureGroup.java (entity) | **Done** | 50 bytes, composite key |
+| CVTRA03Y.cpy | TransactionType.java (entity) | **Done** | 60 bytes, tx type |
+| CVTRA04Y.cpy | TransactionCategory.java (entity) | **Done** | 60 bytes, tx category |
+| CSUSR01Y.cpy | UserSecurity.java (entity) | **Done** | 80 bytes, user security |
+| COCOM01Y.cpy | CardDemoSession.java (DTO) | **Done** | COMMAREA layout |
+| CSUTLDTC.cbl | DateUtil.java | **Done** | 157 LOC, date utility |
+| COBSWAIT.cbl | — (eliminated) | **Done** | 41 LOC, wait utility |
+| CSLKPCDY.cpy | LookupService.java | **Done** | 1,318-line area code table |
+| CODATECN.cpy | DateUtil.java | **Done** | Date conversion |
+| Flyway V001–V012 | SQL migrations | **Done** | Database schema + seed data |
+| Value objects | Money, CardNumber, typed IDs | **Done** | Domain value objects |
 
 ### Phase 1 — Identity, Menus & User Admin
 
@@ -141,3 +141,4 @@
 | Date | Phase | Action | Details |
 |------|-------|--------|---------|
 | 2026-05-26 | Setup | Project skeleton created | Maven multi-module structure at carddemo-java/ |
+| 2026-05-26 | Phase 0 | **Completed** | 65 files, 4,137 LOC, 82 tests pass. 11 entities, 6 VOs, 11 repos, 12 Flyway migrations, 3 utils, 1 DTO |
