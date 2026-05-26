@@ -7,7 +7,7 @@
 | Total COBOL Programs | 43 |
 | Total LOC (COBOL) | ~28,000 |
 | Migration Start Date | 2026-05-26 |
-| Current Phase | Phase 5 — Pending |
+| Current Phase | Phase 6 — Pending |
 | Overall Status | **In Progress** |
 
 ## Phase Summary
@@ -19,7 +19,7 @@
 | 2 | Reference Data & Read-Only Screens | **Done** | [bfd08a5](https://outpostai.devinenterprise.com/sessions/bfd08a5920604f96a8c4714b36cf8416) | COTRTLIC, COTRTUPC, COACTVWC, COCRDSLC, COTRN00C/01C, CORPT00C, COBIL00C (read), COPAUS0C/1C | 150 tests pass (52 new) |
 | 3 | Data Entry Screens | **Done** | [b8ef7e6](https://outpostai.devinenterprise.com/sessions/b8ef7e66a1c04628ba509871ce2a1034) | COCRDLIC, COCRDUPC, COTRN02C (online), COBIL00C (write) | 188 tests pass (26 new) |
 | 4 | Batch Pipeline | **Done** | [eefcb81](https://outpostai.devinenterprise.com/sessions/eefcb81ed9414ec28004b3646be161bd) | CBTRN01C, CBTRN02C, CBACT04C, CBTRN03C, CBSTM03A/B | 210 tests pass (22 new batch) |
-| 5 | Complex Screens & Sub-Apps | Pending | — | COACTUPC, COPAUA0C, COPAUS2C, CBPAUP0C, CODATE01, COACCT01 | Decomposition validation |
+| 5 | Complex Screens & Sub-Apps | **Done** | [12bd288](https://outpostai.devinenterprise.com/sessions/12bd2880b2c84d008577ef013f2e1234) | COACTUPC, COPAUA0C, COPAUS2C, CBPAUP0C, CODATE01, COACCT01 | 279 tests pass (69 new) |
 | 6 | Data Migration & Decommission | Pending | — | CBEXPORT, CBIMPORT, CBACT01C–03C, CBCUS01C | E2E migration tests |
 
 ## Detailed Program Migration Status
@@ -99,12 +99,12 @@
 
 | COBOL Program | LOC | Hotspot Score | Java Target | Status | Notes |
 |---------------|-----|---------------|-------------|--------|-------|
-| COACTUPC.cbl | 4,236 | **15** | AccountUpdateService + CustomerUpdateService + ValidationService — REWRITE | Pending | Most complex program |
-| COPAUA0C.cbl | 1,026 | 10 | AuthorizationService | Pending | MQ-based auth → REST |
-| COPAUS2C.cbl | 244 | 7 | FraudDetectionService | Pending | DB2 fraud check |
-| CBPAUP0C.cbl | 386 | 7 | AuthorizationPurgeJob | Pending | Batch purge |
-| CODATE01.cbl | 524 | 6 | SystemController (GET) | Pending | MQ date inquiry → REST |
-| COACCT01.cbl | 620 | 6 | AccountController (GET extract) | Pending | MQ account inquiry → REST |
+| COACTUPC.cbl | 4,236 | **15** | AccountUpdateService + CustomerUpdateService + ValidationService — REWRITE | **Done** | Most complex program |
+| COPAUA0C.cbl | 1,026 | 10 | AuthorizationService | **Done** | MQ-based auth → REST |
+| COPAUS2C.cbl | 244 | 7 | FraudDetectionService | **Done** | DB2 fraud check |
+| CBPAUP0C.cbl | 386 | 7 | AuthorizationPurgeJob | **Done** | Batch purge |
+| CODATE01.cbl | 524 | 6 | SystemController (GET) | **Done** | MQ date inquiry → REST |
+| COACCT01.cbl | 620 | 6 | AccountController (GET extract) | **Done** | MQ account inquiry → REST |
 
 ### Phase 6 — Data Migration & Decommission
 
@@ -146,3 +146,4 @@
 | 2026-05-26 | Phase 2 | **Completed** | 7 controllers, 7 services, tx type CRUD, read-only views. 150 tests pass (52 new) |
 | 2026-05-26 | Phase 3 | **Completed** | Card update (optimistic locking), transaction add, bill payment. 188 tests pass (26 new) |
 | 2026-05-26 | Phase 4 | **Completed** | 5 Spring Batch jobs, BigDecimal financial arithmetic. 210 tests pass (22 new batch) |
+| 2026-05-26 | Phase 5 | **Completed** | COACTUPC decomposition, authorization service, fraud detection. 279 tests pass (69 new) |
